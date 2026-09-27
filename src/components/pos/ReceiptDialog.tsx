@@ -79,7 +79,7 @@ export function ReceiptDialog({
           </div>
         </div>
 
-        <DialogFooter className="flex flex-col sm:flex-row gap-2 pt-3 no-print">
+        <div className="grid grid-cols-2 gap-2 pt-3 no-print w-full">
           <Button
             type="button"
             variant="outline"
@@ -98,7 +98,7 @@ export function ReceiptDialog({
           >
             New Sale
           </Button>
-        </DialogFooter>
+        </div>
       </DialogContent>
     </Dialog>
   );
