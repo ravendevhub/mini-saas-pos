@@ -14,6 +14,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { EmptyState } from "@/components/common/EmptyState";
 import { Search, ShoppingBag, ShoppingCart } from "lucide-react";
 import { toast } from "sonner";
+import { recordActionLog } from "@/lib/action-logger";
 
 interface POSTerminalProps {
   products: Product[];
@@ -83,6 +84,11 @@ export function POSTerminal({ products }: POSTerminalProps) {
 
   function handleClearCart() {
     setCart([]);
+    recordActionLog({
+      action: "Clear Cart",
+      status: "success",
+      details: "Current order cleared from terminal.",
+    });
   }
 
   function handleInitiateCheckout() {
@@ -105,8 +111,14 @@ export function POSTerminal({ products }: POSTerminalProps) {
       const res = await checkoutSaleAction(payload);
       if (!res.success) {
         toast.error(res.error || "Sale checkout failed.");
+        recordActionLog({
+          action: "Checkout Sale",
+          status: "error",
+          details: res.error || "Sale checkout transaction failed.",
+        });
       } else {
         const total = cart.reduce((sum, i) => sum + i.product.price * i.quantity, 0);
+        const saleRef = res.data?.sale_id ? `#${res.data.sale_id.slice(0, 8).toUpperCase()}` : "SALE";
         setCompletedSale({
           id: res.data?.sale_id || "SALE",
           items: [...cart],
@@ -118,9 +130,19 @@ export function POSTerminal({ products }: POSTerminalProps) {
         setMobileCartOpen(false);
         setReceiptDialogOpen(true);
         toast.success(`Sale recorded (${formatCurrency(total)}).`);
+        recordActionLog({
+          action: "Checkout Sale",
+          status: "success",
+          details: `Order ${saleRef} confirmed for ${formatCurrency(total)} via ${paymentMethod.replace("_", " ").toUpperCase()}.`,
+        });
       }
     } catch {
       toast.error("Network communication error.");
+      recordActionLog({
+        action: "Checkout Sale",
+        status: "error",
+        details: "Network connection error during checkout.",
+      });
     } finally {
       setIsProcessing(false);
     }

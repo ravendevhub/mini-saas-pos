@@ -14,6 +14,7 @@ import {
 import { Product } from "@/types";
 import { deleteProductAction } from "@/actions/products";
 import { toast } from "sonner";
+import { recordActionLog } from "@/lib/action-logger";
 
 interface DeleteProductDialogProps {
   open: boolean;
@@ -34,17 +35,37 @@ export function DeleteProductDialog({ open, onOpenChange, product }: DeleteProdu
       const res = await deleteProductAction(product.id);
       if (!res.success) {
         toast.error(res.error || "Failed to delete product.");
+        recordActionLog({
+          action: "Delete Product",
+          status: "error",
+          details: res.error || `Failed to delete product "${product.name}".`,
+        });
       } else {
         const archived = (res.data as { archived?: boolean })?.archived;
         if (archived) {
           toast.success("Product has past sales history and was archived.");
+          recordActionLog({
+            action: "Archive Product",
+            status: "success",
+            details: `Product "${product.name}" has sales history and was archived.`,
+          });
         } else {
           toast.success("Product deleted successfully.");
+          recordActionLog({
+            action: "Delete Product",
+            status: "success",
+            details: `Product "${product.name}" removed from catalog.`,
+          });
         }
         onOpenChange(false);
       }
     } catch {
       toast.error("Network error. Please try again.");
+      recordActionLog({
+        action: "Delete Product",
+        status: "error",
+        details: `Network error while deleting "${product.name}".`,
+      });
     } finally {
       setIsPending(false);
     }

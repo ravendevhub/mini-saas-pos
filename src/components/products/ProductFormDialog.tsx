@@ -9,6 +9,7 @@ import { Product } from "@/types";
 import { createProductAction, updateProductAction } from "@/actions/products";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { recordActionLog } from "@/lib/action-logger";
 
 interface ProductFormDialogProps {
   open: boolean;
@@ -62,12 +63,27 @@ export function ProductFormDialog({ open, onOpenChange, productToEdit }: Product
 
       if (!res.success) {
         setErrorMessage(res.error || "Operation failed.");
+        recordActionLog({
+          action: productToEdit ? "Update Product" : "Create Product",
+          status: "error",
+          details: res.error || `Failed to ${productToEdit ? "update" : "create"} product "${name}".`,
+        });
       } else {
         toast.success(productToEdit ? "Product updated." : "Product created.");
+        recordActionLog({
+          action: productToEdit ? "Update Product" : "Create Product",
+          status: "success",
+          details: `Product "${name}" successfully ${productToEdit ? "updated" : "added to catalog"}.`,
+        });
         onOpenChange(false);
       }
     } catch {
       setErrorMessage("Network error. Please try again.");
+      recordActionLog({
+        action: productToEdit ? "Update Product" : "Create Product",
+        status: "error",
+        details: "Network connection error while saving product.",
+      });
     } finally {
       setIsPending(false);
     }
