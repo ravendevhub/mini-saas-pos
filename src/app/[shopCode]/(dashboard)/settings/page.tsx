@@ -213,6 +213,7 @@ export default async function StoreSettingsPage({
           plans={allPlans || []}
           paymentMethods={paymentMethods}
           pendingRequest={pendingRequest}
+          shopCode={shopCode}
         />
       </div>
     </div>

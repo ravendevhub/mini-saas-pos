@@ -51,5 +51,6 @@ export const SubmitSubscriptionRequestSchema = z.object({
   transaction_ref: z.string().nullable().optional(),
   slip_url: z.string().min(10, "Payment slip screenshot is required"),
   amount: z.number().min(0),
+  shopCode: z.string().optional(),
 });
 

@@ -16,6 +16,7 @@ interface PlanUpgradeDialogProps {
   plans: SubscriptionPlan[];
   paymentMethods: FounderPaymentMethod[];
   pendingRequest: SubscriptionPaymentRequest | null;
+  shopCode?: string;
 }
 
 export function PlanUpgradeDialog({
@@ -23,6 +24,7 @@ export function PlanUpgradeDialog({
   plans,
   paymentMethods,
   pendingRequest,
+  shopCode = "",
 }: PlanUpgradeDialogProps) {
   const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan | null>(null);
   const [selectedMethodId, setSelectedMethodId] = useState<string>(
@@ -142,6 +144,7 @@ export function PlanUpgradeDialog({
         transaction_ref: transactionRef.trim() || null,
         slip_url: slipUrl,
         amount: selectedPlan.price_per_month,
+        shopCode,
       });
 
       if (!res.success) {
