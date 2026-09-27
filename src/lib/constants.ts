@@ -16,7 +16,7 @@ export interface NavItem {
   title: string;
   href: string;
   iconName: string;
-  requiredPermission?: "can_manage_products" | "can_create_sales" | "can_view_reports" | "can_manage_users";
+  requiredPermission?: keyof import("@/types").Role;
 }
 
 export const NAV_ITEMS: NavItem[] = [
@@ -35,13 +35,13 @@ export const NAV_ITEMS: NavItem[] = [
     title: "Products",
     href: "/products",
     iconName: "Package",
-    requiredPermission: "can_manage_products",
+    requiredPermission: "can_view_products",
   },
   {
     title: "Sales History",
     href: "/sales",
     iconName: "Receipt",
-    requiredPermission: "can_view_reports",
+    requiredPermission: "can_view_sales",
   },
   {
     title: "Reports",
@@ -53,6 +53,7 @@ export const NAV_ITEMS: NavItem[] = [
     title: "Staff",
     href: "/users",
     iconName: "Users",
-    requiredPermission: "can_manage_users",
+    requiredPermission: "can_view_users",
   },
 ];
+

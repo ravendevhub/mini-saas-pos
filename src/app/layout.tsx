@@ -1,11 +1,18 @@
 import type { Metadata } from "next";
-import { Inter, Roboto_Mono } from "next/font/google";
+import { Inter, Noto_Sans_Myanmar, Roboto_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 
 const inter = Inter({
-  variable: "--font-sans",
+  variable: "--font-inter",
   subsets: ["latin"],
+  display: "swap",
+});
+
+const notoSansMyanmar = Noto_Sans_Myanmar({
+  variable: "--font-myanmar",
+  subsets: ["myanmar", "latin"],
+  weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
@@ -24,7 +31,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${robotoMono.variable} font-sans h-full antialiased`}
+      className={`${inter.variable} ${notoSansMyanmar.variable} ${robotoMono.variable} font-sans h-full antialiased`}
     >
       <body className="min-h-full flex flex-col font-sans">
         {children}

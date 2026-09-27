@@ -17,10 +17,25 @@ interface ProductTableProps {
   products: Product[];
   categories: Category[];
   shopCode: string;
-  canManage: boolean;
+  canManage?: boolean;
+  canCreate?: boolean;
+  canEdit?: boolean;
+  canDelete?: boolean;
 }
 
-export function ProductTable({ products, categories: initialCategories, shopCode, canManage }: ProductTableProps) {
+export function ProductTable({
+  products,
+  categories: initialCategories,
+  shopCode,
+  canManage = false,
+  canCreate: propCanCreate,
+  canEdit: propCanEdit,
+  canDelete: propCanDelete,
+}: ProductTableProps) {
+  const canCreate = propCanCreate ?? canManage;
+  const canEdit = propCanEdit ?? canManage;
+  const canDelete = propCanDelete ?? canManage;
+  const hasActions = canEdit || canDelete;
   const [categories, setCategories] = useState<Category[]>(initialCategories);
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
@@ -91,7 +106,7 @@ export function ProductTable({ products, categories: initialCategories, shopCode
           </div>
         </div>
 
-        {canManage && (
+        {canCreate && (
           <div className="flex items-center gap-2">
             <Button
               type="button"
@@ -124,8 +139,8 @@ export function ProductTable({ products, categories: initialCategories, shopCode
               ? "Try adjusting your search query or category filter."
               : "Start by adding your first product to begin selling."
           }
-          actionLabel={canManage && !search && selectedCategory === "all" ? "Add Product" : undefined}
-          onAction={canManage && !search && selectedCategory === "all" ? handleCreate : undefined}
+          actionLabel={canCreate && !search && selectedCategory === "all" ? "Add Product" : undefined}
+          onAction={canCreate && !search && selectedCategory === "all" ? handleCreate : undefined}
         />
       ) : (
         <div className="rounded-lg border border-slate-200 bg-white overflow-hidden shadow-sm">
@@ -138,7 +153,7 @@ export function ProductTable({ products, categories: initialCategories, shopCode
                 <TableHead className="text-xs font-semibold text-slate-700 text-right">Price</TableHead>
                 <TableHead className="text-xs font-semibold text-slate-700 text-center">Stock</TableHead>
                 <TableHead className="text-xs font-semibold text-slate-700 text-center">Status</TableHead>
-                {canManage && (
+                {hasActions && (
                   <TableHead className="text-xs font-semibold text-slate-700 text-right">Actions</TableHead>
                 )}
               </TableRow>
@@ -201,27 +216,31 @@ export function ProductTable({ products, categories: initialCategories, shopCode
                         </Badge>
                       )}
                     </TableCell>
-                    {canManage && (
+                    {hasActions && (
                       <TableCell className="py-2.5 text-right">
                         <div className="flex items-center justify-end gap-1">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleEdit(product)}
-                            className="h-8 w-8 p-0 text-slate-500 hover:text-slate-900"
-                          >
-                            <Edit2 className="w-3.5 h-3.5" />
-                            <span className="sr-only">Edit</span>
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDelete(product)}
-                            className="h-8 w-8 p-0 text-slate-500 hover:text-red-600"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                            <span className="sr-only">Delete</span>
-                          </Button>
+                          {canEdit && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleEdit(product)}
+                              className="h-8 w-8 p-0 text-slate-500 hover:text-slate-900"
+                            >
+                              <Edit2 className="w-3.5 h-3.5" />
+                              <span className="sr-only">Edit</span>
+                            </Button>
+                          )}
+                          {canDelete && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDelete(product)}
+                              className="h-8 w-8 p-0 text-slate-500 hover:text-red-600"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                              <span className="sr-only">Delete</span>
+                            </Button>
+                          )}
                         </div>
                       </TableCell>
                     )}

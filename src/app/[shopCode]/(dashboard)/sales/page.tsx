@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { SalesTable } from "@/components/sales/SalesTable";
 import { SaleWithDetails } from "@/types";
+import { ShieldAlert } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -14,14 +15,53 @@ export default async function SalesPage({
   const { shopCode } = await params;
   const supabase = await createClient();
 
-  const { data: tenant } = await supabase
-    .from("tenants")
-    .select("id")
-    .eq("shop_code", shopCode)
-    .single();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  const [tenantRes, profileRes] = await Promise.all([
+    supabase
+      .from("tenants")
+      .select("id")
+      .eq("shop_code", shopCode)
+      .single(),
+    supabase
+      .from("profiles")
+      .select(`
+        tenant_id,
+        is_super_admin,
+        roles:role_id (
+          can_view_reports,
+          can_view_sales
+        )
+      `)
+      .eq("id", user?.id || "")
+      .single(),
+  ]);
+
+  const tenant = tenantRes.data;
+  const profile = profileRes.data;
 
   if (!tenant) {
     notFound();
+  }
+
+  const permissions = profile?.roles as unknown as {
+    can_view_reports?: boolean;
+    can_view_sales?: boolean;
+  } | null;
+
+  const isSuperAdmin = Boolean(profile?.is_super_admin);
+  const canView = Boolean(permissions?.can_view_sales || permissions?.can_view_reports || isSuperAdmin);
+
+  if (!canView) {
+    return (
+      <div className="flex flex-col items-center justify-center p-12 text-center bg-white border border-slate-200 rounded-lg max-w-md mx-auto my-12">
+        <ShieldAlert className="w-10 h-10 text-red-500 mb-2" />
+        <h2 className="text-base font-semibold text-slate-900">Access Restricted</h2>
+        <p className="text-xs text-slate-500 mt-1">
+          You do not have permission to view sales transaction history.
+        </p>
+      </div>
+    );
   }
 
   const { data: sales } = await supabase

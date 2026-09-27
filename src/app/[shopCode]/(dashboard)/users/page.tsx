@@ -33,20 +33,38 @@ export default async function UsersPage({
 
   const { data: currentProfile } = await supabase
     .from("profiles")
-    .select("tenant_id, is_super_admin, roles:role_id (can_manage_users)")
+    .select(`
+      tenant_id,
+      is_super_admin,
+      roles:role_id (
+        can_manage_users,
+        can_view_users,
+        can_create_users,
+        can_delete_users
+      )
+    `)
     .eq("id", user?.id || "")
     .single();
 
-  const permissions = currentProfile?.roles as unknown as { can_manage_users?: boolean } | null;
-  const canManage = Boolean(permissions?.can_manage_users || currentProfile?.is_super_admin);
+  const permissions = currentProfile?.roles as unknown as {
+    can_manage_users?: boolean;
+    can_view_users?: boolean;
+    can_create_users?: boolean;
+    can_delete_users?: boolean;
+  } | null;
 
-  if (!canManage) {
+  const isSuperAdmin = Boolean(currentProfile?.is_super_admin);
+  const canView = Boolean(permissions?.can_view_users || permissions?.can_manage_users || isSuperAdmin);
+  const canCreate = Boolean(permissions?.can_create_users || permissions?.can_manage_users || isSuperAdmin);
+  const canDelete = Boolean(permissions?.can_delete_users || permissions?.can_manage_users || isSuperAdmin);
+
+  if (!canView) {
     return (
       <div className="flex flex-col items-center justify-center p-12 text-center bg-white border border-slate-200 rounded-lg max-w-md mx-auto my-12">
         <ShieldAlert className="w-10 h-10 text-red-500 mb-2" />
         <h2 className="text-base font-semibold text-slate-900">Access Restricted</h2>
         <p className="text-xs text-slate-500 mt-1">
-          Only the store owner has permission to manage staff accounts and roles.
+          You do not have permission to view or manage staff accounts.
         </p>
       </div>
     );
@@ -73,6 +91,8 @@ export default async function UsersPage({
       <StaffTable
         staffList={(staffList || []) as unknown as ProfileWithRole[]}
         shopCode={shopCode}
+        canCreate={canCreate}
+        canDelete={canDelete}
       />
     </div>
   );

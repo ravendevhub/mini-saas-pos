@@ -32,6 +32,20 @@ export async function getStoreSubscriptionRequestsAction(tenantId: string): Prom
       return { success: false, error: "Unauthorized access." };
     }
 
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("tenant_id, is_super_admin")
+      .eq("id", user.id)
+      .single();
+
+    if (!profile) {
+      return { success: false, error: "User profile not found." };
+    }
+
+    if (profile.tenant_id !== tenantId && !profile.is_super_admin) {
+      return { success: false, error: "Forbidden: Cross-tenant data access is not permitted." };
+    }
+
     const { data, error } = await supabase
       .from("subscription_payment_requests")
       .select("*, subscription_plans(*)")

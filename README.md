@@ -6,15 +6,27 @@ A modern, high-performance, multi-tenant cloud Point of Sale (POS) and inventory
 
 ## 🎨 Typography & Fonts
 
-This project implements the official **Google Fonts & shadcn/ui typography standards** loaded via `next/font/google`:
+This project implements the official **SaaS & ERP typography standard** loaded via `next/font/google`:
 
-- **Primary UI Font — Inter (`--font-sans`)**:
-  - The gold standard for modern web and SaaS application interfaces (designed by Rasmus Andersson).
-  - Adopted globally by Stripe, GitHub, Figma, Linear, and shadcn/ui for crystal-clear readability, neutral grotesque clarity, and tall x-height.
-  - Applied across all headers, navigation elements, inputs, buttons, and descriptive body text.
+- **Primary UI Font Stack — Inter + Noto Sans Myanmar (`--font-sans`)**:
+  - **Inter**: The gold standard for modern web, ERP, POS, and SaaS interfaces (designed by Rasmus Andersson). Adopted globally by Stripe, Linear, GitHub, and Figma for crystal-clear readability and neutral grotesque clarity.
+  - **Noto Sans Myanmar**: Google's official unicode typeface for Myanmar language, providing seamless bilingual typography alongside Inter.
 - **Monospace & Financial Font — Roboto Mono (`--font-mono`)**:
   - High-precision Google monospace typeface paired with `tabular-nums`.
   - Applied to all currency amounts, item prices, SKU barcodes, receipt IDs, transaction totals, quantities, and timestamps so numerical figures align vertically in data tables, receipts, and analytics charts.
+
+### 📐 Standard Typographic Hierarchy & Scale
+| Level | Font Size | Weight | Tailwind Utility | Purpose |
+| :--- | :--- | :--- | :--- | :--- |
+| **Page Title** | `24px` | `600` (SemiBold) | `text-2xl font-semibold` | Screen titles & dashboard headers |
+| **Section Title** | `18px` | `600` (SemiBold) | `text-lg font-semibold` | Panel & section dividers |
+| **Card Title** | `15-16px` | `600` (SemiBold) | `text-base font-semibold` | Metric & form card headers |
+| **Body Text** | `14px` | `400` (Normal) | `text-sm font-normal` | Descriptions, notices & standard body |
+| **Table Content** | `13-14px` | `400` (Normal) | `text-xs / text-sm` | Multi-row dense table data scanning |
+| **Form Input** | `14px` | `400` (Normal) | `text-sm h-9 px-3` | Standard compact form fields |
+| **Buttons** | `14px` | `500-600` | `text-sm font-medium` | Action buttons & call-to-actions |
+| **Caption / Meta** | `12px` | `400` (Normal) | `text-xs text-slate-500` | Helper text, timestamps & microcopy |
+| **Big KPI Number** | `24-32px` | `600-700` | `text-2xl / text-3xl font-bold font-mono tabular-nums` | Financial totals, revenue & counters |
 
 ---
 

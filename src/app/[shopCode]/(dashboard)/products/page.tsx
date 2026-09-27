@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ProductTable } from "@/components/products/ProductTable";
 import { Product, Category } from "@/types";
+import { ShieldAlert } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -30,12 +31,49 @@ export default async function ProductsPage({
     notFound();
   }
 
-  const [profileRes, productsRes, categoriesRes] = await Promise.all([
-    supabase
-      .from("profiles")
-      .select("tenant_id, is_super_admin, roles:role_id (can_manage_products)")
-      .eq("id", user?.id || "")
-      .single(),
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select(`
+      tenant_id,
+      is_super_admin,
+      roles:role_id (
+        can_manage_products,
+        can_view_products,
+        can_create_products,
+        can_edit_products,
+        can_delete_products
+      )
+    `)
+    .eq("id", user?.id || "")
+    .single();
+
+  const permissions = profile?.roles as unknown as {
+    can_manage_products?: boolean;
+    can_view_products?: boolean;
+    can_create_products?: boolean;
+    can_edit_products?: boolean;
+    can_delete_products?: boolean;
+  } | null;
+
+  const isSuperAdmin = Boolean(profile?.is_super_admin);
+  const canView = Boolean(permissions?.can_view_products || permissions?.can_manage_products || isSuperAdmin);
+  const canCreate = Boolean(permissions?.can_create_products || permissions?.can_manage_products || isSuperAdmin);
+  const canEdit = Boolean(permissions?.can_edit_products || permissions?.can_manage_products || isSuperAdmin);
+  const canDelete = Boolean(permissions?.can_delete_products || permissions?.can_manage_products || isSuperAdmin);
+
+  if (!canView) {
+    return (
+      <div className="flex flex-col items-center justify-center p-12 text-center bg-white border border-slate-200 rounded-lg max-w-md mx-auto my-12">
+        <ShieldAlert className="w-10 h-10 text-red-500 mb-2" />
+        <h2 className="text-base font-semibold text-slate-900">Access Restricted</h2>
+        <p className="text-xs text-slate-500 mt-1">
+          You do not have permission to view the product catalog.
+        </p>
+      </div>
+    );
+  }
+
+  const [productsRes, categoriesRes] = await Promise.all([
     supabase
       .from("products")
       .select("*, categories(*)")
@@ -48,12 +86,8 @@ export default async function ProductsPage({
       .order("name", { ascending: true }),
   ]);
 
-  const profile = profileRes.data;
   const products = productsRes.data || [];
   const categories = categoriesRes.data || [];
-
-  const permissions = profile?.roles as unknown as { can_manage_products?: boolean } | null;
-  const canManage = Boolean(permissions?.can_manage_products || profile?.is_super_admin);
 
   return (
     <div className="space-y-4 w-full">
@@ -68,7 +102,9 @@ export default async function ProductsPage({
         products={(products || []) as unknown as Product[]}
         categories={(categories || []) as Category[]}
         shopCode={shopCode}
-        canManage={canManage}
+        canCreate={canCreate}
+        canEdit={canEdit}
+        canDelete={canDelete}
       />
     </div>
   );

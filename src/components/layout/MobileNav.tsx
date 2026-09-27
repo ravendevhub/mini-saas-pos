@@ -55,7 +55,8 @@ export function MobileNav({ tenant, profile, role, shopCode }: MobileNavProps) {
 
   const accessibleNavItems = NAV_ITEMS.filter((item) => {
     if (!item.requiredPermission) return true;
-    return role[item.requiredPermission];
+    if (role.id === "owner" || profile.is_super_admin) return true;
+    return Boolean(role[item.requiredPermission]);
   });
 
   const planName = tenant.subscription_plans?.name || tenant.plan_id.toUpperCase();

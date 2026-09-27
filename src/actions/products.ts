@@ -17,7 +17,13 @@ async function resolveTenantAndAuth(shopCode?: string) {
     .select(`
       tenant_id,
       is_super_admin,
-      roles:role_id (can_manage_products),
+      roles:role_id (
+        can_manage_products,
+        can_view_products,
+        can_create_products,
+        can_edit_products,
+        can_delete_products
+      ),
       tenants:tenant_id (
         id,
         subscription_status,
@@ -119,9 +125,9 @@ export async function createCategoryAction(formData: unknown): Promise<ActionRes
       return { success: false, error: error || "Unauthorized." };
     }
 
-    const permissions = profile?.roles as unknown as { can_manage_products?: boolean } | null;
-    if (!permissions?.can_manage_products && !isSuperAdmin) {
-      return { success: false, error: "Forbidden: You lack permission to manage categories." };
+    const permissions = profile?.roles as unknown as { can_create_products?: boolean } | null;
+    if (!permissions?.can_create_products && !isSuperAdmin) {
+      return { success: false, error: "Forbidden: You lack permission to create categories." };
     }
 
     const { data: existing } = await supabase
@@ -162,8 +168,8 @@ export async function deleteCategoryAction(categoryId: string, shopCode?: string
       return { success: false, error: error || "Unauthorized." };
     }
 
-    const permissions = profile?.roles as unknown as { can_manage_products?: boolean } | null;
-    if (!permissions?.can_manage_products && !isSuperAdmin) {
+    const permissions = profile?.roles as unknown as { can_delete_products?: boolean } | null;
+    if (!permissions?.can_delete_products && !isSuperAdmin) {
       return { success: false, error: "Forbidden: You lack permission to delete categories." };
     }
 
@@ -196,9 +202,9 @@ export async function createProductAction(formData: unknown): Promise<ActionResp
       return { success: false, error: error || "Failed to identify store tenant." };
     }
 
-    const permissions = profile?.roles as unknown as { can_manage_products?: boolean } | null;
-    if (!permissions?.can_manage_products && !isSuperAdmin) {
-      return { success: false, error: "Forbidden: You lack permission to manage products." };
+    const permissions = profile?.roles as unknown as { can_create_products?: boolean } | null;
+    if (!permissions?.can_create_products && !isSuperAdmin) {
+      return { success: false, error: "Forbidden: You lack permission to create products." };
     }
 
     if (tenantInfo?.subscription_status === "suspended") {
@@ -273,9 +279,9 @@ export async function updateProductAction(
       return { success: false, error: error || "Failed to identify store tenant." };
     }
 
-    const permissions = profile?.roles as unknown as { can_manage_products?: boolean } | null;
-    if (!permissions?.can_manage_products && !isSuperAdmin) {
-      return { success: false, error: "Forbidden: You lack permission to manage products." };
+    const permissions = profile?.roles as unknown as { can_edit_products?: boolean } | null;
+    if (!permissions?.can_edit_products && !isSuperAdmin) {
+      return { success: false, error: "Forbidden: You lack permission to edit products." };
     }
 
     if (validated.data.sku) {
@@ -327,8 +333,8 @@ export async function deleteProductAction(productId: string, shopCode?: string):
       return { success: false, error: error || "Failed to identify store tenant." };
     }
 
-    const permissions = profile?.roles as unknown as { can_manage_products?: boolean } | null;
-    if (!permissions?.can_manage_products && !isSuperAdmin) {
+    const permissions = profile?.roles as unknown as { can_delete_products?: boolean } | null;
+    if (!permissions?.can_delete_products && !isSuperAdmin) {
       return { success: false, error: "Forbidden: You lack permission to delete products." };
     }
 

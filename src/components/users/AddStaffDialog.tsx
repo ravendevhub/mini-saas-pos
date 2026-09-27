@@ -142,7 +142,7 @@ export function AddStaffDialog({ open, onOpenChange, shopCode }: AddStaffDialogP
                 }`}
               >
                 <p className="text-xs font-semibold">Cashier</p>
-                <p className="text-[10px] text-slate-500">POS checkout access only</p>
+                <p className="text-[10px] text-slate-500">POS checkout & view products</p>
               </button>
               <button
                 type="button"
@@ -154,7 +154,7 @@ export function AddStaffDialog({ open, onOpenChange, shopCode }: AddStaffDialogP
                 }`}
               >
                 <p className="text-xs font-semibold">Manager</p>
-                <p className="text-[10px] text-slate-500">Catalog, sales & reports</p>
+                <p className="text-[10px] text-slate-500">Full product CRUD, sales & reports</p>
               </button>
             </div>
           </div>

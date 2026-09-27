@@ -25,9 +25,16 @@ import { UserPlus, Trash2 } from "lucide-react";
 interface StaffTableProps {
   staffList: ProfileWithRole[];
   shopCode?: string;
+  canCreate?: boolean;
+  canDelete?: boolean;
 }
 
-export function StaffTable({ staffList, shopCode }: StaffTableProps) {
+export function StaffTable({
+  staffList,
+  shopCode,
+  canCreate = true,
+  canDelete = true,
+}: StaffTableProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<ProfileWithRole | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -72,14 +79,16 @@ export function StaffTable({ staffList, shopCode }: StaffTableProps) {
         <span className="text-xs text-slate-500 font-medium">
           {staffList.length} registered {staffList.length === 1 ? "member" : "members"}
         </span>
-        <Button
-          size="sm"
-          onClick={() => setDialogOpen(true)}
-          className="bg-indigo-600 hover:bg-indigo-700 text-white h-9"
-        >
-          <UserPlus className="w-4 h-4 mr-1.5" />
-          Add Staff
-        </Button>
+        {canCreate && (
+          <Button
+            size="sm"
+            onClick={() => setDialogOpen(true)}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white h-9"
+          >
+            <UserPlus className="w-4 h-4 mr-1.5" />
+            Add Staff
+          </Button>
+        )}
       </div>
 
       <div className="rounded-lg border border-slate-200 bg-white overflow-hidden shadow-sm">
@@ -90,13 +99,16 @@ export function StaffTable({ staffList, shopCode }: StaffTableProps) {
               <TableHead className="text-xs font-semibold text-slate-700">Role</TableHead>
               <TableHead className="text-xs font-semibold text-slate-700">Permissions</TableHead>
               <TableHead className="text-xs font-semibold text-slate-700 text-right">Joined</TableHead>
-              <TableHead className="text-xs font-semibold text-slate-700 text-right">Action</TableHead>
+              {canDelete && (
+                <TableHead className="text-xs font-semibold text-slate-700 text-right">Action</TableHead>
+              )}
             </TableRow>
           </TableHeader>
           <TableBody>
             {staffList.map((member) => {
               const isOwner = member.role_id === "owner";
               const isManager = member.role_id === "manager";
+              const r = member.roles;
 
               return (
                 <TableRow key={member.id} className="border-slate-100 hover:bg-slate-50/50">
@@ -124,46 +136,91 @@ export function StaffTable({ staffList, shopCode }: StaffTableProps) {
                   </TableCell>
                   <TableCell className="py-2.5 text-xs text-slate-500">
                     <div className="flex items-center gap-1.5 flex-wrap">
-                      {isOwner && (
-                        <span className="text-[10px] bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded font-mono">
+                      {isOwner ? (
+                        <span className="text-[10px] bg-indigo-50 text-indigo-700 border border-indigo-200 px-1.5 py-0.5 rounded font-mono font-medium">
                           Full Access
                         </span>
-                      )}
-                      {member.roles?.can_create_sales && (
-                        <span className="text-[10px] bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded font-mono">
-                          POS Checkout
-                        </span>
-                      )}
-                      {member.roles?.can_manage_products && (
-                        <span className="text-[10px] bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded font-mono">
-                          Products
-                        </span>
-                      )}
-                      {member.roles?.can_view_reports && (
-                        <span className="text-[10px] bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded font-mono">
-                          Reports
-                        </span>
+                      ) : (
+                        <>
+                          {r?.can_create_sales && (
+                            <span className="text-[10px] bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded font-mono">
+                              POS
+                            </span>
+                          )}
+                          {r?.can_view_products && (
+                            <span className="text-[10px] bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded font-mono">
+                              Product:View
+                            </span>
+                          )}
+                          {r?.can_create_products && (
+                            <span className="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-1.5 py-0.5 rounded font-mono">
+                              Product:Create
+                            </span>
+                          )}
+                          {r?.can_edit_products && (
+                            <span className="text-[10px] bg-amber-50 text-amber-700 border border-amber-200 px-1.5 py-0.5 rounded font-mono">
+                              Product:Edit
+                            </span>
+                          )}
+                          {r?.can_delete_products && (
+                            <span className="text-[10px] bg-rose-50 text-rose-700 border border-rose-200 px-1.5 py-0.5 rounded font-mono">
+                              Product:Delete
+                            </span>
+                          )}
+                          {r?.can_view_sales && (
+                            <span className="text-[10px] bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded font-mono">
+                              Sales:View
+                            </span>
+                          )}
+                          {r?.can_delete_sales && (
+                            <span className="text-[10px] bg-rose-50 text-rose-700 border border-rose-200 px-1.5 py-0.5 rounded font-mono">
+                              Sales:Delete
+                            </span>
+                          )}
+                          {r?.can_view_reports && (
+                            <span className="text-[10px] bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded font-mono">
+                              Reports
+                            </span>
+                          )}
+                          {r?.can_view_users && (
+                            <span className="text-[10px] bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded font-mono">
+                              Staff:View
+                            </span>
+                          )}
+                          {r?.can_create_users && (
+                            <span className="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-1.5 py-0.5 rounded font-mono">
+                              Staff:Create
+                            </span>
+                          )}
+                          {r?.can_delete_users && (
+                            <span className="text-[10px] bg-rose-50 text-rose-700 border border-rose-200 px-1.5 py-0.5 rounded font-mono">
+                              Staff:Delete
+                            </span>
+                          )}
+                        </>
                       )}
                     </div>
                   </TableCell>
                   <TableCell className="py-2.5 text-xs text-slate-500 text-right">
                     {formatDateTime(member.created_at)}
                   </TableCell>
-                  <TableCell className="py-2.5 text-right">
-                    {!isOwner ? (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setDeleteTarget(member)}
-                        className="h-7 w-7 p-0 text-slate-400 hover:text-red-600 cursor-pointer"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                        <span className="sr-only">Remove</span>
-                      </Button>
-                    ) : (
-                      <span className="text-[10px] text-slate-400 font-mono">Owner</span>
-                    )}
-                  </TableCell>
+                  {canDelete && (
+                    <TableCell className="py-2.5 text-right">
+                      {!isOwner ? (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setDeleteTarget(member)}
+                          className="h-7 w-7 p-0 text-slate-400 hover:text-red-600 cursor-pointer"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span className="sr-only">Remove</span>
+                        </Button>
+                      ) : (
+                        <span className="text-[10px] text-slate-400 font-mono">Owner</span>
+                      )}
+                    </TableCell>
+                  )}
                 </TableRow>
               );
             })}

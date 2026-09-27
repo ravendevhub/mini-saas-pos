@@ -20,7 +20,12 @@ export async function createStaffAction(formData: unknown): Promise<ActionRespon
       .select(`
         tenant_id,
         is_super_admin,
-        roles:role_id (can_manage_users),
+        roles:role_id (
+          can_manage_users,
+          can_view_users,
+          can_create_users,
+          can_delete_users
+        ),
         tenants:tenant_id (
           id,
           subscription_status,
@@ -35,9 +40,9 @@ export async function createStaffAction(formData: unknown): Promise<ActionRespon
     }
 
     const isSuperAdmin = Boolean(profile.is_super_admin);
-    const permissions = profile.roles as unknown as { can_manage_users?: boolean } | null;
-    if (!permissions?.can_manage_users && !isSuperAdmin) {
-      return { success: false, error: "Forbidden: Only store owners can add staff members." };
+    const permissions = profile.roles as unknown as { can_create_users?: boolean } | null;
+    if (!permissions?.can_create_users && !isSuperAdmin) {
+      return { success: false, error: "Forbidden: You lack permission to add staff members." };
     }
 
     const validated = CreateStaffSchema.safeParse(formData);
@@ -171,7 +176,17 @@ export async function deleteStaffAction(staffId: string, shopCode?: string): Pro
 
     const { data: currentProfile, error: profileError } = await supabase
       .from("profiles")
-      .select("id, tenant_id, is_super_admin, roles:role_id (can_manage_users)")
+      .select(`
+        id,
+        tenant_id,
+        is_super_admin,
+        roles:role_id (
+          can_manage_users,
+          can_view_users,
+          can_create_users,
+          can_delete_users
+        )
+      `)
       .eq("id", user.id)
       .single();
 
@@ -180,9 +195,9 @@ export async function deleteStaffAction(staffId: string, shopCode?: string): Pro
     }
 
     const isSuperAdmin = Boolean(currentProfile.is_super_admin);
-    const permissions = currentProfile.roles as unknown as { can_manage_users?: boolean } | null;
-    if (!permissions?.can_manage_users && !isSuperAdmin) {
-      return { success: false, error: "Forbidden: Only store owners can delete staff." };
+    const permissions = currentProfile.roles as unknown as { can_delete_users?: boolean } | null;
+    if (!permissions?.can_delete_users && !isSuperAdmin) {
+      return { success: false, error: "Forbidden: You lack permission to delete staff." };
     }
 
     if (staffId === user.id) {

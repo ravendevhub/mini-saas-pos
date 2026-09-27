@@ -39,18 +39,18 @@ export const FounderPaymentMethodSchema = z.object({
 export const ReviewSubscriptionRequestSchema = z.object({
   requestId: z.string().uuid("Invalid request ID"),
   action: z.enum(["approve", "reject"]),
-  adminNotes: z.string().optional(),
+  adminNotes: z.string().trim().max(500).optional(),
 });
 
 export const SubmitSubscriptionRequestSchema = z.object({
-  requested_plan_id: z.string().min(1, "Plan selection is required"),
+  requested_plan_id: z.string().trim().min(1, "Plan selection is required"),
   payment_method_id: z.string().uuid().nullable().optional(),
-  payment_method_name: z.string().min(1, "Payment method is required"),
-  sender_name: z.string().min(2, "Sender name must be at least 2 characters"),
-  sender_phone: z.string().min(5, "Sender phone must be at least 5 digits"),
-  transaction_ref: z.string().nullable().optional(),
-  slip_url: z.string().min(10, "Payment slip screenshot is required"),
+  payment_method_name: z.string().trim().min(1, "Payment method is required").max(100),
+  sender_name: z.string().trim().min(2, "Sender name must be at least 2 characters").max(100),
+  sender_phone: z.string().trim().min(5, "Sender phone must be at least 5 digits").max(30),
+  transaction_ref: z.string().trim().max(100).nullable().optional(),
+  slip_url: z.string().trim().min(5, "Payment slip screenshot is required"),
   amount: z.number().min(0),
-  shopCode: z.string().optional(),
+  shopCode: z.string().trim().optional(),
 });
 
