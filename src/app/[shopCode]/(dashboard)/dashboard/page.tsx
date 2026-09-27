@@ -24,6 +24,9 @@ import {
   ShieldCheck
 } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function StoreDashboardPage({
   params,
 }: {
@@ -53,14 +56,73 @@ export default async function StoreDashboardPage({
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
 
-  const { data: todaySales } = await supabase
-    .from("sales")
-    .select("total_amount, payment_method")
-    .eq("tenant_id", tenant.id)
-    .gte("created_at", todayStart.toISOString());
+  const [
+    todaySalesRes,
+    allSalesRes,
+    activeProductCountRes,
+    lowStockProductsRes,
+    recentSalesRes,
+    rawSaleItemsRes,
+    storeStaffRes,
+  ] = await Promise.all([
+    supabase
+      .from("sales")
+      .select("total_amount, payment_method")
+      .eq("tenant_id", tenant.id)
+      .gte("created_at", todayStart.toISOString()),
+    supabase
+      .from("sales")
+      .select("total_amount")
+      .eq("tenant_id", tenant.id),
+    supabase
+      .from("products")
+      .select("*", { count: "exact", head: true })
+      .eq("tenant_id", tenant.id)
+      .eq("is_active", true),
+    supabase
+      .from("products")
+      .select("id, name, sku, price, stock_quantity")
+      .eq("tenant_id", tenant.id)
+      .eq("is_active", true)
+      .lte("stock_quantity", 5)
+      .order("stock_quantity", { ascending: true })
+      .limit(5),
+    supabase
+      .from("sales")
+      .select(`
+        id,
+        total_amount,
+        payment_method,
+        created_at,
+        profiles:cashier_id (full_name)
+      `)
+      .eq("tenant_id", tenant.id)
+      .order("created_at", { ascending: false })
+      .limit(5),
+    supabase
+      .from("sale_items")
+      .select(`
+        quantity,
+        subtotal,
+        product:product_id (name, sku),
+        sales!inner(tenant_id)
+      `)
+      .eq("sales.tenant_id", tenant.id)
+      .limit(100),
+    supabase
+      .from("profiles")
+      .select(`
+        id,
+        full_name,
+        roles:role_id (name)
+      `)
+      .eq("tenant_id", tenant.id)
+      .order("created_at", { ascending: true }),
+  ]);
 
-  const todayRevenue = (todaySales || []).reduce((sum, s) => sum + Number(s.total_amount), 0);
-  const todayOrdersCount = todaySales?.length || 0;
+  const todaySales = todaySalesRes.data || [];
+  const todayRevenue = todaySales.reduce((sum, s) => sum + Number(s.total_amount), 0);
+  const todayOrdersCount = todaySales.length;
 
   const paymentBreakdown = {
     cash: { count: 0, amount: 0 },
@@ -68,7 +130,7 @@ export default async function StoreDashboardPage({
     qr_transfer: { count: 0, amount: 0 },
   };
 
-  (todaySales || []).forEach((s) => {
+  todaySales.forEach((s) => {
     const method = s.payment_method as keyof typeof paymentBreakdown;
     if (paymentBreakdown[method]) {
       paymentBreakdown[method].count += 1;
@@ -76,55 +138,19 @@ export default async function StoreDashboardPage({
     }
   });
 
-  const { data: allSales } = await supabase
-    .from("sales")
-    .select("total_amount")
-    .eq("tenant_id", tenant.id);
+  const allSales = allSalesRes.data || [];
+  const totalRevenue = allSales.reduce((sum, s) => sum + Number(s.total_amount), 0);
+  const totalOrdersCount = allSales.length;
 
-  const totalRevenue = (allSales || []).reduce((sum, s) => sum + Number(s.total_amount), 0);
-  const totalOrdersCount = allSales?.length || 0;
+  const activeProductCount = activeProductCountRes.count || 0;
+  const lowStockProducts = lowStockProductsRes.data || [];
+  const lowStockCount = lowStockProducts.length;
 
-  const { count: activeProductCount } = await supabase
-    .from("products")
-    .select("*", { count: "exact", head: true })
-    .eq("tenant_id", tenant.id)
-    .eq("is_active", true);
-
-  const { data: lowStockProducts } = await supabase
-    .from("products")
-    .select("id, name, sku, price, stock_quantity")
-    .eq("tenant_id", tenant.id)
-    .eq("is_active", true)
-    .lte("stock_quantity", 5)
-    .order("stock_quantity", { ascending: true })
-    .limit(5);
-
-  const lowStockCount = lowStockProducts?.length || 0;
-
-  const { data: recentSales } = await supabase
-    .from("sales")
-    .select(`
-      id,
-      total_amount,
-      payment_method,
-      created_at,
-      profiles:cashier_id (full_name)
-    `)
-    .eq("tenant_id", tenant.id)
-    .order("created_at", { ascending: false })
-    .limit(5);
-
-  const { data: rawSaleItems } = await supabase
-    .from("sale_items")
-    .select(`
-      quantity,
-      subtotal,
-      product:product_id (name, sku)
-    `)
-    .limit(100);
+  const recentSales = recentSalesRes.data || [];
+  const rawSaleItems = rawSaleItemsRes.data || [];
 
   const productAggregates: Record<string, { name: string; sku: string; quantity: number; revenue: number }> = {};
-  (rawSaleItems || []).forEach((item) => {
+  rawSaleItems.forEach((item) => {
     const prod = item.product as unknown as { name?: string; sku?: string } | null;
     if (!prod?.name) return;
     if (!productAggregates[prod.name]) {
@@ -138,17 +164,8 @@ export default async function StoreDashboardPage({
     .sort((a, b) => b.quantity - a.quantity)
     .slice(0, 5);
 
-  const { data: storeStaff } = await supabase
-    .from("profiles")
-    .select(`
-      id,
-      full_name,
-      roles:role_id (name)
-    `)
-    .eq("tenant_id", tenant.id)
-    .order("created_at", { ascending: true });
-
-  const staffCount = storeStaff?.length || 1;
+  const storeStaff = storeStaffRes.data || [];
+  const staffCount = storeStaff.length || 1;
 
   const planInfo = tenant.subscription_plans as unknown as {
     name: string;

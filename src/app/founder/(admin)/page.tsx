@@ -1,12 +1,19 @@
-import { getFounderStatsAction, getFounderTenantsAction } from "@/actions/founder";
+import { getFounderStatsAction, getFounderTenantsAction, getFounderPlansAction } from "@/actions/founder";
 import { formatCurrency } from "@/lib/formatters";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FounderTenantsTable } from "@/components/founder/FounderTenantsTable";
+import { FounderPlansCard } from "@/components/founder/FounderPlansCard";
 import { Store, DollarSign, CheckCircle2, ShoppingBag } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function FounderAdminPage() {
-  const statsRes = await getFounderStatsAction();
-  const tenantsRes = await getFounderTenantsAction();
+  const [statsRes, tenantsRes, plansRes] = await Promise.all([
+    getFounderStatsAction(),
+    getFounderTenantsAction(),
+    getFounderPlansAction(),
+  ]);
 
   const stats = statsRes.data || {
     totalTenants: 0,
@@ -16,6 +23,7 @@ export default async function FounderAdminPage() {
   };
 
   const tenants = tenantsRes.data || [];
+  const plans = plansRes.data || [];
 
   return (
     <div className="space-y-6 w-full">
@@ -87,6 +95,8 @@ export default async function FounderAdminPage() {
           </CardContent>
         </Card>
       </div>
+
+      <FounderPlansCard plans={plans} tenants={tenants} />
 
       <div className="space-y-3">
         <h3 className="text-sm font-semibold text-slate-900">Registered Merchant Stores</h3>

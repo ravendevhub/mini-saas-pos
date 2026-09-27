@@ -6,6 +6,9 @@ import { MobileNav } from "@/components/layout/MobileNav";
 import { TenantWithPlan, Profile, Role } from "@/types";
 import { AlertCircle } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function DashboardLayout({
   children,
   params,
@@ -21,29 +24,33 @@ export default async function DashboardLayout({
     redirect("/login");
   }
 
-  const { data: tenant, error: tenantError } = await supabase
-    .from("tenants")
-    .select(`
-      *,
-      subscription_plans:plan_id (*)
-    `)
-    .eq("shop_code", shopCode)
-    .single();
+  const [tenantRes, profileRes] = await Promise.all([
+    supabase
+      .from("tenants")
+      .select(`
+        *,
+        subscription_plans:plan_id (*)
+      `)
+      .eq("shop_code", shopCode)
+      .single(),
+    supabase
+      .from("profiles")
+      .select(`
+        *,
+        roles:role_id (*)
+      `)
+      .eq("id", user.id)
+      .single(),
+  ]);
 
-  if (tenantError || !tenant) {
+  const tenant = tenantRes.data;
+  const profile = profileRes.data;
+
+  if (tenantRes.error || !tenant) {
     notFound();
   }
 
-  const { data: profile, error: profileError } = await supabase
-    .from("profiles")
-    .select(`
-      *,
-      roles:role_id (*)
-    `)
-    .eq("id", user.id)
-    .single();
-
-  if (profileError || !profile || !profile.roles) {
+  if (profileRes.error || !profile || !profile.roles) {
     redirect("/login");
   }
 

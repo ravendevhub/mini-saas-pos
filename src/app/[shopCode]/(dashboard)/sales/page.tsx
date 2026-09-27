@@ -3,6 +3,9 @@ import { createClient } from "@/lib/supabase/server";
 import { SalesTable } from "@/components/sales/SalesTable";
 import { SaleWithDetails } from "@/types";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function SalesPage({
   params,
 }: {

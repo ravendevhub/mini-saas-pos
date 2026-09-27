@@ -4,6 +4,9 @@ import { StaffTable } from "@/components/users/StaffTable";
 import { ProfileWithRole } from "@/types";
 import { ShieldAlert } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function UsersPage({
   params,
 }: {
@@ -12,17 +15,22 @@ export default async function UsersPage({
   const { shopCode } = await params;
   const supabase = await createClient();
 
-  const { data: tenant } = await supabase
-    .from("tenants")
-    .select("id")
-    .eq("shop_code", shopCode)
-    .single();
+  const [userRes, tenantRes] = await Promise.all([
+    supabase.auth.getUser(),
+    supabase
+      .from("tenants")
+      .select("id")
+      .eq("shop_code", shopCode)
+      .single(),
+  ]);
+
+  const user = userRes.data?.user;
+  const tenant = tenantRes.data;
 
   if (!tenant) {
     notFound();
   }
 
-  const { data: { user } } = await supabase.auth.getUser();
   const { data: currentProfile } = await supabase
     .from("profiles")
     .select("tenant_id, roles:role_id (can_manage_users)")

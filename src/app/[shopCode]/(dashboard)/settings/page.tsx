@@ -6,6 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { Store, CreditCard, Package, Users, CheckCircle2 } from "lucide-react";
 import { TenantWithPlan } from "@/types";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function StoreSettingsPage({
   params,
 }: {
@@ -27,20 +30,24 @@ export default async function StoreSettingsPage({
 
   const typedTenant = tenant as unknown as TenantWithPlan;
 
-  const { count: productCount } = await supabase
-    .from("products")
-    .select("*", { count: "exact", head: true })
-    .eq("tenant_id", typedTenant.id);
+  const [productCountRes, staffCountRes, allPlansRes] = await Promise.all([
+    supabase
+      .from("products")
+      .select("*", { count: "exact", head: true })
+      .eq("tenant_id", typedTenant.id),
+    supabase
+      .from("profiles")
+      .select("*", { count: "exact", head: true })
+      .eq("tenant_id", typedTenant.id),
+    supabase
+      .from("subscription_plans")
+      .select("*")
+      .order("price_per_month", { ascending: true }),
+  ]);
 
-  const { count: staffCount } = await supabase
-    .from("profiles")
-    .select("*", { count: "exact", head: true })
-    .eq("tenant_id", typedTenant.id);
-
-  const { data: allPlans } = await supabase
-    .from("subscription_plans")
-    .select("*")
-    .order("price_per_month", { ascending: true });
+  const productCount = productCountRes.count;
+  const staffCount = staffCountRes.count;
+  const allPlans = allPlansRes.data;
 
   const currentPlan = typedTenant.subscription_plans;
   const maxProducts = currentPlan?.max_products || 30;

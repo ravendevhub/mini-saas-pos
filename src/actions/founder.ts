@@ -1,9 +1,9 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { UpdateTenantPlanSchema, UpdateTenantStatusSchema, ExtendSubscriptionSchema } from "@/validations/founder";
+import { UpdateTenantPlanSchema, UpdateTenantStatusSchema, ExtendSubscriptionSchema, UpdateSubscriptionPlanSchema } from "@/validations/founder";
 import { LoginSchema } from "@/validations/auth";
-import { ActionResponse, FounderTenantSummary, TenantWithPlan, Profile } from "@/types";
+import { ActionResponse, FounderTenantSummary, TenantWithPlan, Profile, SubscriptionPlan } from "@/types";
 import { revalidatePath } from "next/cache";
 
 async function verifySuperAdmin() {
@@ -30,19 +30,18 @@ export async function getFounderStatsAction() {
     return { success: false, error: "Unauthorized access: Founder Admin privileges required." };
   }
 
-  const { data: tenants } = await supabase
-    .from("tenants")
-    .select("id, subscription_status, plan_id");
+  const [tenantsRes, salesRes] = await Promise.all([
+    supabase.from("tenants").select("id, subscription_status, plan_id"),
+    supabase.from("sales").select("total_amount"),
+  ]);
 
-  const totalTenants = tenants?.length || 0;
-  const activeTenants = tenants?.filter((t) => t.subscription_status === "active").length || 0;
+  const tenants = tenantsRes.data || [];
+  const sales = salesRes.data || [];
 
-  const { data: sales } = await supabase
-    .from("sales")
-    .select("total_amount");
-
-  const platformTotalRevenue = (sales || []).reduce((sum, s) => sum + Number(s.total_amount), 0);
-  const platformTotalOrders = sales?.length || 0;
+  const totalTenants = tenants.length;
+  const activeTenants = tenants.filter((t) => t.subscription_status === "active").length;
+  const platformTotalRevenue = sales.reduce((sum, s) => sum + Number(s.total_amount), 0);
+  const platformTotalOrders = sales.length;
 
   return {
     success: true,
@@ -73,44 +72,92 @@ export async function getFounderTenantsAction(): Promise<ActionResponse<FounderT
     return { success: true, data: [] };
   }
 
-  const summaries: FounderTenantSummary[] = [];
+  const summaries = await Promise.all(
+    tenants.map(async (t) => {
+      const [ownerRes, productCountRes, staffCountRes, salesRes] = await Promise.all([
+        supabase
+          .from("profiles")
+          .select("*")
+          .eq("tenant_id", t.id)
+          .eq("role_id", "owner")
+          .maybeSingle(),
+        supabase
+          .from("products")
+          .select("*", { count: "exact", head: true })
+          .eq("tenant_id", t.id),
+        supabase
+          .from("profiles")
+          .select("*", { count: "exact", head: true })
+          .eq("tenant_id", t.id),
+        supabase
+          .from("sales")
+          .select("total_amount")
+          .eq("tenant_id", t.id),
+      ]);
 
-  for (const t of tenants) {
-    const { data: owner } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("tenant_id", t.id)
-      .eq("role_id", "owner")
-      .maybeSingle();
+      const revenue = (salesRes.data || []).reduce((sum, s) => sum + Number(s.total_amount), 0);
 
-    const { count: productCount } = await supabase
-      .from("products")
-      .select("*", { count: "exact", head: true })
-      .eq("tenant_id", t.id);
-
-    const { count: staffCount } = await supabase
-      .from("profiles")
-      .select("*", { count: "exact", head: true })
-      .eq("tenant_id", t.id);
-
-    const { data: tenantSales } = await supabase
-      .from("sales")
-      .select("total_amount")
-      .eq("tenant_id", t.id);
-
-    const revenue = (tenantSales || []).reduce((sum, s) => sum + Number(s.total_amount), 0);
-
-    summaries.push({
-      tenant: t as unknown as TenantWithPlan,
-      owner: owner as Profile | null,
-      totalProducts: productCount || 0,
-      totalStaff: staffCount || 0,
-      totalSalesCount: tenantSales?.length || 0,
-      totalRevenue: revenue,
-    });
-  }
+      return {
+        tenant: t as unknown as TenantWithPlan,
+        owner: (ownerRes.data || null) as Profile | null,
+        totalProducts: productCountRes.count || 0,
+        totalStaff: staffCountRes.count || 0,
+        totalSalesCount: salesRes.data?.length || 0,
+        totalRevenue: revenue,
+      };
+    })
+  );
 
   return { success: true, data: summaries };
+}
+
+export async function getFounderPlansAction(): Promise<ActionResponse<SubscriptionPlan[]>> {
+  const { authorized, supabase } = await verifySuperAdmin();
+  if (!authorized) {
+    return { success: false, error: "Unauthorized access: Founder Admin privileges required." };
+  }
+
+  const { data: plans, error } = await supabase
+    .from("subscription_plans")
+    .select("*")
+    .order("price_per_month", { ascending: true });
+
+  if (error || !plans) {
+    return { success: false, error: "Failed to load subscription plans." };
+  }
+
+  return { success: true, data: plans as SubscriptionPlan[] };
+}
+
+export async function updateSubscriptionPlanAction(formData: unknown): Promise<ActionResponse> {
+  const { authorized, supabase } = await verifySuperAdmin();
+  if (!authorized) {
+    return { success: false, error: "Unauthorized access: Founder Admin privileges required." };
+  }
+
+  const validated = UpdateSubscriptionPlanSchema.safeParse(formData);
+  if (!validated.success) {
+    return { success: false, error: validated.error.issues[0]?.message || "Validation error." };
+  }
+
+  const { error } = await supabase
+    .from("subscription_plans")
+    .update({
+      name: validated.data.name,
+      price_per_month: validated.data.price_per_month,
+      max_products: validated.data.max_products,
+      max_staff: validated.data.max_staff,
+      can_view_reports: validated.data.can_view_reports,
+    })
+    .eq("id", validated.data.planId);
+
+  if (error) {
+    return { success: false, error: "Failed to update subscription tier." };
+  }
+
+  revalidatePath("/founder");
+  revalidatePath("/", "layout");
+  return { success: true };
 }
 
 export async function updateTenantPlanAction(formData: unknown): Promise<ActionResponse> {

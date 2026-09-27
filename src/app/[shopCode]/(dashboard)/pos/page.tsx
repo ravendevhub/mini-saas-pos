@@ -3,6 +3,9 @@ import { createClient } from "@/lib/supabase/server";
 import { POSTerminal } from "@/components/pos/POSTerminal";
 import { Product } from "@/types";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function POSPage({
   params,
 }: {

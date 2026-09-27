@@ -3,6 +3,9 @@ import { createClient } from "@/lib/supabase/server";
 import { ProductTable } from "@/components/products/ProductTable";
 import { Product } from "@/types";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function ProductsPage({
   params,
 }: {
@@ -11,31 +14,40 @@ export default async function ProductsPage({
   const { shopCode } = await params;
   const supabase = await createClient();
 
-  const { data: tenant } = await supabase
-    .from("tenants")
-    .select("id")
-    .eq("shop_code", shopCode)
-    .single();
+  const [userRes, tenantRes] = await Promise.all([
+    supabase.auth.getUser(),
+    supabase
+      .from("tenants")
+      .select("id")
+      .eq("shop_code", shopCode)
+      .single(),
+  ]);
+
+  const user = userRes.data?.user;
+  const tenant = tenantRes.data;
 
   if (!tenant) {
     notFound();
   }
 
-  const { data: { user } } = await supabase.auth.getUser();
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("tenant_id, roles:role_id (can_manage_products)")
-    .eq("id", user?.id || "")
-    .single();
+  const [profileRes, productsRes] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select("tenant_id, roles:role_id (can_manage_products)")
+      .eq("id", user?.id || "")
+      .single(),
+    supabase
+      .from("products")
+      .select("*")
+      .eq("tenant_id", tenant.id)
+      .order("created_at", { ascending: false }),
+  ]);
+
+  const profile = profileRes.data;
+  const products = productsRes.data || [];
 
   const permissions = profile?.roles as unknown as { can_manage_products?: boolean } | null;
   const canManage = Boolean(permissions?.can_manage_products);
-
-  const { data: products } = await supabase
-    .from("products")
-    .select("*")
-    .eq("tenant_id", tenant.id)
-    .order("created_at", { ascending: false });
 
   return (
     <div className="space-y-4 w-full">

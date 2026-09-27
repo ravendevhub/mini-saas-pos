@@ -5,6 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DollarSign, ShoppingBag, Package, TrendingUp, CreditCard } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function ReportsPage({
   params,
 }: {
@@ -26,22 +29,31 @@ export default async function ReportsPage({
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
 
-  const { data: todaySales } = await supabase
-    .from("sales")
-    .select("total_amount")
-    .eq("tenant_id", tenant.id)
-    .gte("created_at", todayStart.toISOString());
+  const [todaySalesRes, allSalesRes, saleItemsRes] = await Promise.all([
+    supabase
+      .from("sales")
+      .select("total_amount")
+      .eq("tenant_id", tenant.id)
+      .gte("created_at", todayStart.toISOString()),
+    supabase
+      .from("sales")
+      .select("total_amount, payment_method, cashier:cashier_id (full_name)")
+      .eq("tenant_id", tenant.id),
+    supabase
+      .from("sale_items")
+      .select("quantity, subtotal, product:product_id (id, name, sku), sales!inner(tenant_id)")
+      .eq("sales.tenant_id", tenant.id),
+  ]);
 
-  const todayRevenue = (todaySales || []).reduce((sum, s) => sum + Number(s.total_amount), 0);
-  const todayOrdersCount = todaySales?.length || 0;
+  const todaySales = todaySalesRes.data || [];
+  const todayRevenue = todaySales.reduce((sum, s) => sum + Number(s.total_amount), 0);
+  const todayOrdersCount = todaySales.length;
 
-  const { data: allSales } = await supabase
-    .from("sales")
-    .select("total_amount, payment_method, cashier:cashier_id (full_name)")
-    .eq("tenant_id", tenant.id);
+  const allSales = allSalesRes.data || [];
+  const totalRevenue = allSales.reduce((sum, s) => sum + Number(s.total_amount), 0);
+  const totalOrdersCount = allSales.length;
 
-  const totalRevenue = (allSales || []).reduce((sum, s) => sum + Number(s.total_amount), 0);
-  const totalOrdersCount = allSales?.length || 0;
+  const saleItems = saleItemsRes.data || [];
 
   const paymentBreakdown: Record<string, { count: number; total: number }> = {};
   allSales?.forEach((sale) => {
@@ -52,11 +64,6 @@ export default async function ReportsPage({
     paymentBreakdown[method].count += 1;
     paymentBreakdown[method].total += Number(sale.total_amount);
   });
-
-  const { data: saleItems } = await supabase
-    .from("sale_items")
-    .select("quantity, subtotal, product:product_id (id, name, sku), sales!inner(tenant_id)")
-    .eq("sales.tenant_id", tenant.id);
 
   const productAggregates: Record<string, { name: string; sku: string | null; totalQuantity: number; totalRevenue: number }> = {};
 
