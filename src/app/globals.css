@@ -141,6 +141,19 @@
   }
 }
 
+[data-sonner-toaster] {
+  --width: fit-content !important;
+  width: auto !important;
+}
+
+[data-sonner-toast] {
+  width: fit-content !important;
+  min-width: auto !important;
+  max-width: min(400px, calc(100vw - 32px)) !important;
+  padding: 8px 14px !important;
+  border-radius: 8px !important;
+}
+
 @media print {
   body {
     visibility: hidden !important;
