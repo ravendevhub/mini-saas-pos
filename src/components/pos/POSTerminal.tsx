@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Product, CartItem } from "@/types";
+import { Product, CartItem, Category } from "@/types";
 import { formatCurrency } from "@/lib/formatters";
 import { ProductCard } from "./ProductCard";
 import { CartPanel } from "./CartPanel";
@@ -18,10 +18,13 @@ import { recordActionLog } from "@/lib/action-logger";
 
 interface POSTerminalProps {
   products: Product[];
+  categories?: Category[];
+  shopCode?: string;
 }
 
-export function POSTerminal({ products }: POSTerminalProps) {
+export function POSTerminal({ products, categories = [], shopCode = "" }: POSTerminalProps) {
   const [search, setSearch] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [cart, setCart] = useState<CartItem[]>([]);
   const [mobileCartOpen, setMobileCartOpen] = useState(false);
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
@@ -38,7 +41,16 @@ export function POSTerminal({ products }: POSTerminalProps) {
     const q = search.toLowerCase();
     const matchName = p.name.toLowerCase().includes(q);
     const matchSku = p.sku ? p.sku.toLowerCase().includes(q) : false;
-    return matchName || matchSku;
+    const matchSearch = matchName || matchSku;
+
+    const matchCategory =
+      selectedCategory === "all"
+        ? true
+        : selectedCategory === "uncategorized"
+        ? !p.category_id
+        : p.category_id === selectedCategory;
+
+    return matchSearch && matchCategory;
   });
 
   function handleAddToCart(product: Product) {
@@ -105,6 +117,7 @@ export function POSTerminal({ products }: POSTerminalProps) {
         quantity: item.quantity,
       })),
       payment_method: paymentMethod,
+      shopCode,
     };
 
     try {
@@ -178,15 +191,48 @@ export function POSTerminal({ products }: POSTerminalProps) {
         </div>
       </div>
 
+      {categories.length > 0 && (
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+          <button
+            type="button"
+            onClick={() => setSelectedCategory("all")}
+            className={`text-xs px-3 py-1.5 rounded-full font-medium transition-colors whitespace-nowrap ${
+              selectedCategory === "all"
+                ? "bg-indigo-600 text-white shadow-sm"
+                : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
+            }`}
+          >
+            All Items ({products.length})
+          </button>
+          {categories.map((c) => {
+            const count = products.filter((p) => p.category_id === c.id).length;
+            return (
+              <button
+                key={c.id}
+                type="button"
+                onClick={() => setSelectedCategory(c.id)}
+                className={`text-xs px-3 py-1.5 rounded-full font-medium transition-colors whitespace-nowrap ${
+                  selectedCategory === c.id
+                    ? "bg-indigo-600 text-white shadow-sm"
+                    : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
+                }`}
+              >
+                {c.name} ({count})
+              </button>
+            );
+          })}
+        </div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start w-full">
         <div className="lg:col-span-8 xl:col-span-8 2xl:col-span-9 space-y-3 min-w-0">
           {filteredProducts.length === 0 ? (
             <EmptyState
               icon={ShoppingBag}
-              title={search ? "No matching products found" : "No active products"}
+              title={search || selectedCategory !== "all" ? "No matching products found" : "No active products"}
               description={
-                search
-                  ? "Try searching with a different term."
+                search || selectedCategory !== "all"
+                  ? "Try searching with a different term or clearing category filter."
                   : "Add products in the catalog to begin selling."
               }
             />
@@ -218,34 +264,30 @@ export function POSTerminal({ products }: POSTerminalProps) {
         </div>
       </div>
 
-      {totalItemsCount > 0 && (
-        <div className="lg:hidden fixed bottom-0 inset-x-0 bg-white border-t border-slate-200 p-3 flex items-center justify-between z-30 shadow-lg">
-          <div className="min-w-0">
-            <p className="text-xs font-semibold text-slate-900">
-              {totalItemsCount} {totalItemsCount === 1 ? "item" : "items"}
-            </p>
-            <p className="text-sm font-mono font-bold text-indigo-600 tabular-nums">
-              {formatCurrency(totalAmount)}
-            </p>
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 p-3 bg-white border-t border-slate-200 flex items-center justify-between z-40 shadow-lg">
+        <div>
+          <span className="text-xs text-slate-500 font-medium">Total ({totalItemsCount} items)</span>
+          <div className="text-base font-bold font-mono text-slate-900 tabular-nums">
+            {formatCurrency(totalAmount)}
           </div>
-
-          <Button
-            size="sm"
-            onClick={() => setMobileCartOpen(true)}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs h-9"
-          >
-            <ShoppingCart className="w-3.5 h-3.5 mr-1.5" />
-            View Cart
-          </Button>
         </div>
-      )}
+
+        <Button
+          onClick={() => setMobileCartOpen(true)}
+          disabled={cart.length === 0}
+          className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-xs px-4 h-9 gap-1.5"
+        >
+          <ShoppingCart className="w-4 h-4" />
+          View Cart ({totalItemsCount})
+        </Button>
+      </div>
 
       <Sheet open={mobileCartOpen} onOpenChange={setMobileCartOpen}>
-        <SheetContent side="bottom" className="h-[85vh] p-0 flex flex-col bg-white">
-          <SheetHeader className="p-3 border-b border-slate-200 text-left">
-            <SheetTitle className="text-sm font-semibold text-slate-900">Active Order</SheetTitle>
+        <SheetContent side="bottom" className="h-[80vh] p-0 flex flex-col bg-white">
+          <SheetHeader className="p-4 border-b border-slate-200">
+            <SheetTitle className="text-sm font-semibold text-slate-900">Current Order</SheetTitle>
           </SheetHeader>
-          <div className="flex-1 overflow-hidden p-2">
+          <div className="flex-1 overflow-hidden p-3">
             <CartPanel
               items={cart}
               onUpdateQuantity={handleUpdateQuantity}

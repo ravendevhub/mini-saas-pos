@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ErrorBanner } from "@/components/common/ErrorBanner";
-import { Product } from "@/types";
+import { Product, Category } from "@/types";
 import { createProductAction, updateProductAction } from "@/actions/products";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
@@ -15,11 +15,20 @@ interface ProductFormDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   productToEdit?: Product | null;
+  categories?: Category[];
+  shopCode?: string;
 }
 
-export function ProductFormDialog({ open, onOpenChange, productToEdit }: ProductFormDialogProps) {
+export function ProductFormDialog({
+  open,
+  onOpenChange,
+  productToEdit,
+  categories = [],
+  shopCode = "",
+}: ProductFormDialogProps) {
   const [name, setName] = useState("");
   const [sku, setSku] = useState("");
+  const [categoryId, setCategoryId] = useState("");
   const [price, setPrice] = useState("");
   const [stockQuantity, setStockQuantity] = useState("");
   const [isActive, setIsActive] = useState(true);
@@ -30,12 +39,14 @@ export function ProductFormDialog({ open, onOpenChange, productToEdit }: Product
     if (productToEdit) {
       setName(productToEdit.name);
       setSku(productToEdit.sku || "");
+      setCategoryId(productToEdit.category_id || "");
       setPrice(productToEdit.price.toString());
       setStockQuantity(productToEdit.stock_quantity.toString());
       setIsActive(productToEdit.is_active);
     } else {
       setName("");
       setSku("");
+      setCategoryId("");
       setPrice("");
       setStockQuantity("0");
       setIsActive(true);
@@ -51,9 +62,11 @@ export function ProductFormDialog({ open, onOpenChange, productToEdit }: Product
     const payload = {
       name,
       sku: sku.trim() || null,
+      category_id: categoryId || null,
       price: parseFloat(price) || 0,
       stock_quantity: parseInt(stockQuantity, 10) || 0,
       is_active: isActive,
+      shopCode,
     };
 
     try {
@@ -118,17 +131,38 @@ export function ProductFormDialog({ open, onOpenChange, productToEdit }: Product
             />
           </div>
 
-          <div className="space-y-1">
-            <label className="text-xs font-medium text-slate-700" htmlFor="prod-sku">
-              SKU / Barcode
-            </label>
-            <Input
-              id="prod-sku"
-              value={sku}
-              onChange={(e) => setSku(e.target.value)}
-              placeholder="e.g. MLK-001"
-              className="h-9"
-            />
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-slate-700" htmlFor="prod-category">
+                Category
+              </label>
+              <select
+                id="prod-category"
+                value={categoryId}
+                onChange={(e) => setCategoryId(e.target.value)}
+                className="h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              >
+                <option value="">(Uncategorized)</option>
+                {categories.map((cat) => (
+                  <option key={cat.id} value={cat.id}>
+                    {cat.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-slate-700" htmlFor="prod-sku">
+                SKU / Barcode
+              </label>
+              <Input
+                id="prod-sku"
+                value={sku}
+                onChange={(e) => setSku(e.target.value)}
+                placeholder="e.g. MLK-001"
+                className="h-9"
+              />
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">

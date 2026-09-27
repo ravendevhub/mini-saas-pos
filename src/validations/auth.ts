@@ -26,6 +26,7 @@ export const CreateStaffSchema = z.object({
   email: z.string().email("Invalid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
   role_id: z.enum(["manager", "cashier"]),
+  shopCode: z.string().optional(),
 });
 
 export type CreateStaffInput = z.infer<typeof CreateStaffSchema>;

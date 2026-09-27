@@ -41,9 +41,18 @@ export interface Profile {
   updated_at: string;
 }
 
+export interface Category {
+  id: string;
+  tenant_id: string;
+  name: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Product {
   id: string;
   tenant_id: string;
+  category_id?: string | null;
   name: string;
   sku: string | null;
   price: number;
@@ -52,6 +61,7 @@ export interface Product {
   image_url: string | null;
   created_at: string;
   updated_at: string;
+  categories?: Category | null;
 }
 
 export interface Sale {

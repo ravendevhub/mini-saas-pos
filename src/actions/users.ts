@@ -19,8 +19,10 @@ export async function createStaffAction(formData: unknown): Promise<ActionRespon
       .from("profiles")
       .select(`
         tenant_id,
+        is_super_admin,
         roles:role_id (can_manage_users),
         tenants:tenant_id (
+          id,
           subscription_status,
           subscription_plans:plan_id (name, max_staff)
         )
@@ -32,37 +34,78 @@ export async function createStaffAction(formData: unknown): Promise<ActionRespon
       return { success: false, error: "Unauthorized: Profile not found." };
     }
 
+    const isSuperAdmin = Boolean(profile.is_super_admin);
     const permissions = profile.roles as unknown as { can_manage_users?: boolean } | null;
-    if (!permissions?.can_manage_users) {
+    if (!permissions?.can_manage_users && !isSuperAdmin) {
       return { success: false, error: "Forbidden: Only store owners can add staff members." };
-    }
-
-    const tenantInfo = profile.tenants as unknown as {
-      subscription_status?: string;
-      subscription_plans?: { name: string; max_staff: number };
-    } | null;
-
-    if (tenantInfo?.subscription_status === "suspended") {
-      return { success: false, error: "Store subscription is currently suspended." };
-    }
-
-    const maxStaffAllowed = tenantInfo?.subscription_plans?.max_staff || 1;
-
-    const { count: currentStaffCount } = await supabase
-      .from("profiles")
-      .select("*", { count: "exact", head: true })
-      .eq("tenant_id", profile.tenant_id);
-
-    if (currentStaffCount !== null && currentStaffCount >= maxStaffAllowed + 1) {
-      return {
-        success: false,
-        error: `Staff capacity limit reached (${maxStaffAllowed} members) on the ${tenantInfo?.subscription_plans?.name || "current"} plan. Upgrade your plan to add more staff.`,
-      };
     }
 
     const validated = CreateStaffSchema.safeParse(formData);
     if (!validated.success) {
       return { success: false, error: validated.error.issues[0]?.message || "Validation error." };
+    }
+
+    let targetTenantId = profile.tenant_id;
+    let targetTenantInfo = profile.tenants as unknown as {
+      id?: string;
+      subscription_status?: string;
+      subscription_plans?: { name: string; max_staff: number };
+    } | null;
+
+    if (isSuperAdmin) {
+      if (validated.data.shopCode) {
+        const { data: storeTenant } = await supabase
+          .from("tenants")
+          .select("id, subscription_status, subscription_plans:plan_id(name, max_staff)")
+          .eq("shop_code", validated.data.shopCode)
+          .single();
+        if (storeTenant) {
+          targetTenantId = storeTenant.id;
+          targetTenantInfo = storeTenant as unknown as {
+            id?: string;
+            subscription_status?: string;
+            subscription_plans?: { name: string; max_staff: number };
+          };
+        }
+      }
+      if (!targetTenantId) {
+        const { data: fallbackTenant } = await supabase
+          .from("tenants")
+          .select("id, subscription_status, subscription_plans:plan_id(name, max_staff)")
+          .order("created_at", { ascending: true })
+          .limit(1)
+          .single();
+        if (fallbackTenant) {
+          targetTenantId = fallbackTenant.id;
+          targetTenantInfo = fallbackTenant as unknown as {
+            id?: string;
+            subscription_status?: string;
+            subscription_plans?: { name: string; max_staff: number };
+          };
+        }
+      }
+    }
+
+    if (!targetTenantId) {
+      return { success: false, error: "Store tenant could not be resolved." };
+    }
+
+    if (targetTenantInfo?.subscription_status === "suspended") {
+      return { success: false, error: "Store subscription is currently suspended." };
+    }
+
+    const maxStaffAllowed = targetTenantInfo?.subscription_plans?.max_staff || 1;
+
+    const { count: currentStaffCount } = await supabase
+      .from("profiles")
+      .select("*", { count: "exact", head: true })
+      .eq("tenant_id", targetTenantId);
+
+    if (currentStaffCount !== null && currentStaffCount >= maxStaffAllowed + 1) {
+      return {
+        success: false,
+        error: `Staff capacity limit reached (${maxStaffAllowed} members) on the ${targetTenantInfo?.subscription_plans?.name || "current"} plan. Upgrade your plan to add more staff.`,
+      };
     }
 
     const statelessClient = createStatelessClient(
@@ -95,24 +138,29 @@ export async function createStaffAction(formData: unknown): Promise<ActionRespon
       .from("profiles")
       .insert({
         id: authData.user.id,
-        tenant_id: profile.tenant_id,
+        tenant_id: targetTenantId,
         role_id: validated.data.role_id,
         full_name: validated.data.fullName,
-        is_super_admin: false,
       });
 
     if (insertProfileError) {
-      return { success: false, error: "Failed to map staff profile." };
+      return {
+        success: false,
+        error: "User registered in auth, but profile creation failed: " + insertProfileError.message,
+      };
     }
 
     revalidatePath("/", "layout");
     return { success: true };
-  } catch (err) {
-    return { success: false, error: "An unexpected error occurred while adding staff." };
+  } catch (err: unknown) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "An unexpected server error occurred while creating staff.",
+    };
   }
 }
 
-export async function deleteStaffAction(staffId: string): Promise<ActionResponse> {
+export async function deleteStaffAction(staffId: string, shopCode?: string): Promise<ActionResponse> {
   try {
     const supabase = await createClient();
 
@@ -123,7 +171,7 @@ export async function deleteStaffAction(staffId: string): Promise<ActionResponse
 
     const { data: currentProfile, error: profileError } = await supabase
       .from("profiles")
-      .select("tenant_id, roles:role_id (can_manage_users)")
+      .select("id, tenant_id, is_super_admin, roles:role_id (can_manage_users)")
       .eq("id", user.id)
       .single();
 
@@ -131,13 +179,14 @@ export async function deleteStaffAction(staffId: string): Promise<ActionResponse
       return { success: false, error: "Unauthorized: Profile not found." };
     }
 
+    const isSuperAdmin = Boolean(currentProfile.is_super_admin);
     const permissions = currentProfile.roles as unknown as { can_manage_users?: boolean } | null;
-    if (!permissions?.can_manage_users) {
+    if (!permissions?.can_manage_users && !isSuperAdmin) {
       return { success: false, error: "Forbidden: Only store owners can delete staff." };
     }
 
     if (staffId === user.id) {
-      return { success: false, error: "Store owner account cannot be deleted." };
+      return { success: false, error: "Current user account cannot be deleted." };
     }
 
     const { data: targetProfile, error: targetError } = await supabase
@@ -150,7 +199,19 @@ export async function deleteStaffAction(staffId: string): Promise<ActionResponse
       return { success: false, error: "Staff member not found." };
     }
 
-    if (targetProfile.tenant_id !== currentProfile.tenant_id) {
+    let allowedTenantId = currentProfile.tenant_id;
+    if (isSuperAdmin && shopCode) {
+      const { data: storeTenant } = await supabase
+        .from("tenants")
+        .select("id")
+        .eq("shop_code", shopCode)
+        .single();
+      if (storeTenant) {
+        allowedTenantId = storeTenant.id;
+      }
+    }
+
+    if (allowedTenantId && targetProfile.tenant_id !== allowedTenantId && !isSuperAdmin) {
       return { success: false, error: "Unauthorized operation across store boundaries." };
     }
 
@@ -177,8 +238,7 @@ export async function deleteStaffAction(staffId: string): Promise<ActionResponse
     const { error: deleteError } = await supabase
       .from("profiles")
       .delete()
-      .eq("id", staffId)
-      .eq("tenant_id", currentProfile.tenant_id);
+      .eq("id", staffId);
 
     if (deleteError) {
       return { success: false, error: "Failed to remove staff profile." };

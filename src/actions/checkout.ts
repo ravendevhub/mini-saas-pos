@@ -26,7 +26,7 @@ export async function checkoutSaleAction(payload: unknown): Promise<ActionRespon
 
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
-      .select("tenant_id, roles:role_id (can_create_sales)")
+      .select("tenant_id, is_super_admin, roles:role_id (can_create_sales)")
       .eq("id", user.id)
       .single();
 
@@ -34,14 +34,42 @@ export async function checkoutSaleAction(payload: unknown): Promise<ActionRespon
       return { success: false, error: "Unauthorized: Profile not found." };
     }
 
+    const isSuperAdmin = Boolean(profile.is_super_admin);
     const permissions = profile.roles as unknown as { can_create_sales?: boolean } | null;
-    if (!permissions?.can_create_sales) {
+    if (!permissions?.can_create_sales && !isSuperAdmin) {
       return { success: false, error: "Forbidden: You lack permission to perform sales." };
+    }
+
+    let targetTenantId = profile.tenant_id;
+    if (isSuperAdmin) {
+      if (validated.data.shopCode) {
+        const { data: storeTenant } = await supabase
+          .from("tenants")
+          .select("id")
+          .eq("shop_code", validated.data.shopCode)
+          .single();
+        if (storeTenant) {
+          targetTenantId = storeTenant.id;
+        }
+      }
+
+      if (!targetTenantId && validated.data.items.length > 0) {
+        const firstProductId = validated.data.items[0].product_id;
+        const { data: prod } = await supabase
+          .from("products")
+          .select("tenant_id")
+          .eq("id", firstProductId)
+          .single();
+        if (prod) {
+          targetTenantId = prod.tenant_id;
+        }
+      }
     }
 
     const { data: rpcResult, error: rpcError } = await supabase.rpc("create_sale", {
       p_items: validated.data.items,
       p_payment_method: validated.data.payment_method,
+      p_target_tenant_id: targetTenantId || null,
     });
 
     if (rpcError) {
@@ -56,7 +84,7 @@ export async function checkoutSaleAction(payload: unknown): Promise<ActionRespon
       success: true,
       data: result,
     };
-  } catch (err) {
+  } catch {
     return { success: false, error: "Checkout transaction failed. Please try again." };
   }
 }

@@ -24,9 +24,10 @@ import { UserPlus, Trash2 } from "lucide-react";
 
 interface StaffTableProps {
   staffList: ProfileWithRole[];
+  shopCode?: string;
 }
 
-export function StaffTable({ staffList }: StaffTableProps) {
+export function StaffTable({ staffList, shopCode }: StaffTableProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<ProfileWithRole | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -36,7 +37,7 @@ export function StaffTable({ staffList }: StaffTableProps) {
     setIsDeleting(true);
 
     try {
-      const res = await deleteStaffAction(deleteTarget.id);
+      const res = await deleteStaffAction(deleteTarget.id, shopCode);
       if (!res.success) {
         toast.error(res.error || "Failed to remove staff member.");
         recordActionLog({
@@ -170,7 +171,7 @@ export function StaffTable({ staffList }: StaffTableProps) {
         </Table>
       </div>
 
-      <AddStaffDialog open={dialogOpen} onOpenChange={setDialogOpen} />
+      <AddStaffDialog open={dialogOpen} onOpenChange={setDialogOpen} shopCode={shopCode} />
 
       <AlertDialog open={Boolean(deleteTarget)} onOpenChange={(open) => !open && setDeleteTarget(null)}>
         <AlertDialogContent className="bg-white border-slate-200 text-slate-900 max-w-sm p-4 sm:p-6">

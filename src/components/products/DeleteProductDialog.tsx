@@ -20,9 +20,10 @@ interface DeleteProductDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   product: Product | null;
+  shopCode?: string;
 }
 
-export function DeleteProductDialog({ open, onOpenChange, product }: DeleteProductDialogProps) {
+export function DeleteProductDialog({ open, onOpenChange, product, shopCode }: DeleteProductDialogProps) {
   const [isPending, setIsPending] = useState(false);
 
   if (!product) return null;
@@ -32,7 +33,7 @@ export function DeleteProductDialog({ open, onOpenChange, product }: DeleteProdu
     setIsPending(true);
 
     try {
-      const res = await deleteProductAction(product.id);
+      const res = await deleteProductAction(product.id, shopCode);
       if (!res.success) {
         toast.error(res.error || "Failed to delete product.");
         recordActionLog({

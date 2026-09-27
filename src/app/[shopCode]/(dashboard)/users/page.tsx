@@ -33,13 +33,14 @@ export default async function UsersPage({
 
   const { data: currentProfile } = await supabase
     .from("profiles")
-    .select("tenant_id, roles:role_id (can_manage_users)")
+    .select("tenant_id, is_super_admin, roles:role_id (can_manage_users)")
     .eq("id", user?.id || "")
     .single();
 
   const permissions = currentProfile?.roles as unknown as { can_manage_users?: boolean } | null;
+  const canManage = Boolean(permissions?.can_manage_users || currentProfile?.is_super_admin);
 
-  if (!permissions?.can_manage_users) {
+  if (!canManage) {
     return (
       <div className="flex flex-col items-center justify-center p-12 text-center bg-white border border-slate-200 rounded-lg max-w-md mx-auto my-12">
         <ShieldAlert className="w-10 h-10 text-red-500 mb-2" />
@@ -69,7 +70,10 @@ export default async function UsersPage({
         </p>
       </div>
 
-      <StaffTable staffList={(staffList || []) as unknown as ProfileWithRole[]} />
+      <StaffTable
+        staffList={(staffList || []) as unknown as ProfileWithRole[]}
+        shopCode={shopCode}
+      />
     </div>
   );
 }

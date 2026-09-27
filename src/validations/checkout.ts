@@ -8,6 +8,7 @@ export const CartItemPayloadSchema = z.object({
 export const CheckoutPayloadSchema = z.object({
   items: z.array(CartItemPayloadSchema).min(1, "Cart cannot be empty"),
   payment_method: z.enum(["cash", "card", "qr_transfer"]).default("cash"),
+  shopCode: z.string().optional(),
 });
 
 export type CheckoutPayload = z.infer<typeof CheckoutPayloadSchema>;

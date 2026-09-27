@@ -13,9 +13,10 @@ import { recordActionLog } from "@/lib/action-logger";
 interface AddStaffDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  shopCode?: string;
 }
 
-export function AddStaffDialog({ open, onOpenChange }: AddStaffDialogProps) {
+export function AddStaffDialog({ open, onOpenChange, shopCode }: AddStaffDialogProps) {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -34,6 +35,7 @@ export function AddStaffDialog({ open, onOpenChange }: AddStaffDialogProps) {
         email,
         password,
         role_id: roleId,
+        shopCode,
       });
 
       if (!res.success) {
