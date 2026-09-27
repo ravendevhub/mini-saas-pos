@@ -20,6 +20,7 @@ export async function createStaffAction(formData: unknown): Promise<ActionRespon
       .select(`
         tenant_id,
         is_super_admin,
+        role_id,
         roles:role_id (
           can_manage_users,
           can_view_users,
@@ -41,7 +42,7 @@ export async function createStaffAction(formData: unknown): Promise<ActionRespon
 
     const isSuperAdmin = Boolean(profile.is_super_admin);
     const permissions = profile.roles as unknown as { can_create_users?: boolean } | null;
-    if (!permissions?.can_create_users && !isSuperAdmin) {
+    if (profile.role_id !== "owner" && !permissions?.can_create_users && !isSuperAdmin) {
       return { success: false, error: "Forbidden: You lack permission to add staff members." };
     }
 
@@ -180,6 +181,7 @@ export async function deleteStaffAction(staffId: string, shopCode?: string): Pro
         id,
         tenant_id,
         is_super_admin,
+        role_id,
         roles:role_id (
           can_manage_users,
           can_view_users,
@@ -196,7 +198,7 @@ export async function deleteStaffAction(staffId: string, shopCode?: string): Pro
 
     const isSuperAdmin = Boolean(currentProfile.is_super_admin);
     const permissions = currentProfile.roles as unknown as { can_delete_users?: boolean } | null;
-    if (!permissions?.can_delete_users && !isSuperAdmin) {
+    if (currentProfile.role_id !== "owner" && !permissions?.can_delete_users && !isSuperAdmin) {
       return { success: false, error: "Forbidden: You lack permission to delete staff." };
     }
 

@@ -2,7 +2,7 @@ import { ReactNode } from "react";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { AppSidebar } from "@/components/layout/AppSidebar";
-import { MobileNav } from "@/components/layout/MobileNav";
+import { Header } from "@/components/layout/Header";
 import { TenantWithPlan, Profile, Role } from "@/types";
 import { AlertCircle } from "lucide-react";
 
@@ -58,6 +58,19 @@ export default async function DashboardLayout({
     redirect("/login");
   }
 
+  let storeOwnerName = profile.full_name;
+  if (profile.tenant_id !== tenant.id) {
+    const { data: ownerProfile } = await supabase
+      .from("profiles")
+      .select("full_name")
+      .eq("tenant_id", tenant.id)
+      .eq("role_id", "owner")
+      .maybeSingle();
+    if (ownerProfile?.full_name) {
+      storeOwnerName = ownerProfile.full_name;
+    }
+  }
+
   const typedTenant = tenant as unknown as TenantWithPlan;
   const role = profile.roles as unknown as Role;
   const userProfile = {
@@ -78,9 +91,21 @@ export default async function DashboardLayout({
 
   return (
     <div className="flex flex-col lg:flex-row min-h-screen bg-slate-50 text-slate-900">
-      <AppSidebar tenant={typedTenant} profile={userProfile} role={role} shopCode={shopCode} />
+      <AppSidebar
+        tenant={typedTenant}
+        profile={userProfile}
+        role={role}
+        shopCode={shopCode}
+        storeOwnerName={storeOwnerName}
+      />
       <div className="flex-1 flex flex-col min-w-0">
-        <MobileNav tenant={typedTenant} profile={userProfile} role={role} shopCode={shopCode} />
+        <Header
+          tenant={typedTenant}
+          profile={userProfile}
+          role={role}
+          shopCode={shopCode}
+          storeOwnerName={storeOwnerName}
+        />
 
         {isSuspended ? (
           <div className="p-4 sm:p-6">

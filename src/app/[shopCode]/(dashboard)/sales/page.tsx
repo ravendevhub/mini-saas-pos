@@ -28,6 +28,7 @@ export default async function SalesPage({
       .select(`
         tenant_id,
         is_super_admin,
+        role_id,
         roles:role_id (
           can_view_reports,
           can_view_sales
@@ -50,7 +51,8 @@ export default async function SalesPage({
   } | null;
 
   const isSuperAdmin = Boolean(profile?.is_super_admin);
-  const canView = Boolean(permissions?.can_view_sales || permissions?.can_view_reports || isSuperAdmin);
+  const isOwner = profile?.role_id === "owner";
+  const canView = Boolean(isSuperAdmin || isOwner || permissions?.can_view_sales || permissions?.can_view_reports);
 
   if (!canView) {
     return (

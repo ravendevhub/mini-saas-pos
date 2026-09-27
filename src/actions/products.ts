@@ -17,6 +17,7 @@ async function resolveTenantAndAuth(shopCode?: string) {
     .select(`
       tenant_id,
       is_super_admin,
+      role_id,
       roles:role_id (
         can_manage_products,
         can_view_products,
@@ -126,7 +127,7 @@ export async function createCategoryAction(formData: unknown): Promise<ActionRes
     }
 
     const permissions = profile?.roles as unknown as { can_create_products?: boolean } | null;
-    if (!permissions?.can_create_products && !isSuperAdmin) {
+    if (profile?.role_id !== "owner" && !permissions?.can_create_products && !isSuperAdmin) {
       return { success: false, error: "Forbidden: You lack permission to create categories." };
     }
 
@@ -169,7 +170,7 @@ export async function deleteCategoryAction(categoryId: string, shopCode?: string
     }
 
     const permissions = profile?.roles as unknown as { can_delete_products?: boolean } | null;
-    if (!permissions?.can_delete_products && !isSuperAdmin) {
+    if (profile?.role_id !== "owner" && !permissions?.can_delete_products && !isSuperAdmin) {
       return { success: false, error: "Forbidden: You lack permission to delete categories." };
     }
 
@@ -203,7 +204,7 @@ export async function createProductAction(formData: unknown): Promise<ActionResp
     }
 
     const permissions = profile?.roles as unknown as { can_create_products?: boolean } | null;
-    if (!permissions?.can_create_products && !isSuperAdmin) {
+    if (profile?.role_id !== "owner" && !permissions?.can_create_products && !isSuperAdmin) {
       return { success: false, error: "Forbidden: You lack permission to create products." };
     }
 
@@ -280,7 +281,7 @@ export async function updateProductAction(
     }
 
     const permissions = profile?.roles as unknown as { can_edit_products?: boolean } | null;
-    if (!permissions?.can_edit_products && !isSuperAdmin) {
+    if (profile?.role_id !== "owner" && !permissions?.can_edit_products && !isSuperAdmin) {
       return { success: false, error: "Forbidden: You lack permission to edit products." };
     }
 
@@ -334,7 +335,7 @@ export async function deleteProductAction(productId: string, shopCode?: string):
     }
 
     const permissions = profile?.roles as unknown as { can_delete_products?: boolean } | null;
-    if (!permissions?.can_delete_products && !isSuperAdmin) {
+    if (profile?.role_id !== "owner" && !permissions?.can_delete_products && !isSuperAdmin) {
       return { success: false, error: "Forbidden: You lack permission to delete products." };
     }
 

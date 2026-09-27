@@ -36,6 +36,7 @@ export default async function UsersPage({
     .select(`
       tenant_id,
       is_super_admin,
+      role_id,
       roles:role_id (
         can_manage_users,
         can_view_users,
@@ -54,9 +55,10 @@ export default async function UsersPage({
   } | null;
 
   const isSuperAdmin = Boolean(currentProfile?.is_super_admin);
-  const canView = Boolean(permissions?.can_view_users || permissions?.can_manage_users || isSuperAdmin);
-  const canCreate = Boolean(permissions?.can_create_users || permissions?.can_manage_users || isSuperAdmin);
-  const canDelete = Boolean(permissions?.can_delete_users || permissions?.can_manage_users || isSuperAdmin);
+  const isOwner = currentProfile?.role_id === "owner";
+  const canView = Boolean(isSuperAdmin || isOwner || permissions?.can_view_users || permissions?.can_manage_users);
+  const canCreate = Boolean(isSuperAdmin || isOwner || permissions?.can_create_users || permissions?.can_manage_users);
+  const canDelete = Boolean(isSuperAdmin || isOwner || permissions?.can_delete_users || permissions?.can_manage_users);
 
   if (!canView) {
     return (

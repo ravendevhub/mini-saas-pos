@@ -36,6 +36,7 @@ export default async function ProductsPage({
     .select(`
       tenant_id,
       is_super_admin,
+      role_id,
       roles:role_id (
         can_manage_products,
         can_view_products,
@@ -56,10 +57,11 @@ export default async function ProductsPage({
   } | null;
 
   const isSuperAdmin = Boolean(profile?.is_super_admin);
-  const canView = Boolean(permissions?.can_view_products || permissions?.can_manage_products || isSuperAdmin);
-  const canCreate = Boolean(permissions?.can_create_products || permissions?.can_manage_products || isSuperAdmin);
-  const canEdit = Boolean(permissions?.can_edit_products || permissions?.can_manage_products || isSuperAdmin);
-  const canDelete = Boolean(permissions?.can_delete_products || permissions?.can_manage_products || isSuperAdmin);
+  const isOwner = profile?.role_id === "owner";
+  const canView = Boolean(isSuperAdmin || isOwner || permissions?.can_view_products || permissions?.can_manage_products);
+  const canCreate = Boolean(isSuperAdmin || isOwner || permissions?.can_create_products || permissions?.can_manage_products);
+  const canEdit = Boolean(isSuperAdmin || isOwner || permissions?.can_edit_products || permissions?.can_manage_products);
+  const canDelete = Boolean(isSuperAdmin || isOwner || permissions?.can_delete_products || permissions?.can_manage_products);
 
   if (!canView) {
     return (
