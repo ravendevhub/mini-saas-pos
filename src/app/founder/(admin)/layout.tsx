@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { logoutAction } from "@/actions/auth";
 import { Button } from "@/components/ui/button";
 import { Shield, LogOut } from "lucide-react";
+import { FounderSignOutButton } from "@/components/founder/FounderSignOutButton";
 
 export default async function FounderAdminLayout({ children }: { children: ReactNode }) {
   const supabase = await createClient();
@@ -36,17 +37,7 @@ export default async function FounderAdminLayout({ children }: { children: React
 
         <div className="flex items-center gap-3">
           <span className="text-xs text-slate-300 hidden sm:inline">{profile.full_name}</span>
-          <form action={logoutAction}>
-            <Button
-              type="submit"
-              variant="ghost"
-              size="sm"
-              className="text-xs text-slate-300 hover:text-white hover:bg-slate-800 h-8"
-            >
-              <LogOut className="w-3.5 h-3.5 mr-1" />
-              Sign Out
-            </Button>
-          </form>
+          <FounderSignOutButton />
         </div>
       </header>
 

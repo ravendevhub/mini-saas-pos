@@ -8,6 +8,17 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { updateTenantPlanAction, updateTenantStatusAction, extendSubscriptionAction } from "@/actions/founder";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { ExternalLink, CalendarPlus, Power } from "lucide-react";
 import Link from "next/link";
@@ -153,31 +164,79 @@ export function FounderTenantsTable({ tenants }: FounderTenantsTableProps) {
                 </TableCell>
                 <TableCell className="py-3 text-right">
                   <div className="flex items-center justify-end gap-1.5">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={isLoading}
-                      onClick={() => handleExtend(tenant.id)}
-                      className="h-7 px-2 text-[11px] text-slate-600 border-slate-200 hover:bg-slate-50"
-                      title="Add 30 days subscription"
-                    >
-                      <CalendarPlus className="w-3 h-3 mr-1 text-slate-500" />
-                      +30 Days
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      disabled={isLoading}
-                      onClick={() => handleToggleStatus(tenant.id, tenant.subscription_status)}
-                      className={`h-7 px-2 text-[11px] ${
-                        isSuspended
-                          ? "text-green-600 hover:text-green-700 hover:bg-green-50"
-                          : "text-red-600 hover:text-red-700 hover:bg-red-50"
-                      }`}
-                    >
-                      <Power className="w-3 h-3 mr-1" />
-                      {isSuspended ? "Activate" : "Suspend"}
-                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={isLoading}
+                          className="h-7 px-2 text-[11px] text-slate-600 border-slate-200 hover:bg-slate-50 cursor-pointer"
+                        >
+                          <CalendarPlus className="w-3 h-3 mr-1 text-slate-500" />
+                          +30 Days
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent className="bg-white border-slate-200 text-slate-900 max-w-sm">
+                        <AlertDialogHeader>
+                          <AlertDialogTitle className="text-sm font-semibold text-slate-900">
+                            Extend Store Subscription?
+                          </AlertDialogTitle>
+                          <AlertDialogDescription className="text-xs text-slate-500">
+                            Add 30 billing days to {tenant.name}&apos;s subscription access.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter className="gap-2 sm:gap-0">
+                          <AlertDialogCancel className="text-xs h-8">Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => handleExtend(tenant.id)}
+                            className="text-xs h-8 bg-indigo-600 hover:bg-indigo-700 text-white"
+                          >
+                            Confirm +30 Days
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          disabled={isLoading}
+                          className={`h-7 px-2 text-[11px] cursor-pointer ${
+                            isSuspended
+                              ? "text-green-600 hover:text-green-700 hover:bg-green-50"
+                              : "text-red-600 hover:text-red-700 hover:bg-red-50"
+                          }`}
+                        >
+                          <Power className="w-3 h-3 mr-1" />
+                          {isSuspended ? "Activate" : "Suspend"}
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent className="bg-white border-slate-200 text-slate-900 max-w-sm">
+                        <AlertDialogHeader>
+                          <AlertDialogTitle className="text-sm font-semibold text-slate-900">
+                            {isSuspended ? "Reactivate Store Access?" : "Suspend Store Access?"}
+                          </AlertDialogTitle>
+                          <AlertDialogDescription className="text-xs text-slate-500">
+                            {isSuspended
+                              ? `Restore active status for ${tenant.name}. Staff will be able to log in and process sales immediately.`
+                              : `Temporarily suspend ${tenant.name}. Store staff will be blocked from logging in and processing sales.`}
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter className="gap-2 sm:gap-0">
+                          <AlertDialogCancel className="text-xs h-8">Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => handleToggleStatus(tenant.id, tenant.subscription_status)}
+                            className={`text-xs h-8 text-white ${
+                              isSuspended ? "bg-green-600 hover:bg-green-700" : "bg-red-600 hover:bg-red-700"
+                            }`}
+                          >
+                            {isSuspended ? "Reactivate Store" : "Suspend Store"}
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
                 </TableCell>
               </TableRow>

@@ -21,6 +21,17 @@ import { Badge } from "@/components/ui/badge";
 import { NAV_ITEMS } from "@/lib/constants";
 import { Role, TenantWithPlan, Profile } from "@/types";
 import { logoutAction } from "@/actions/auth";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const ICON_MAP = {
   LayoutDashboard,
@@ -121,17 +132,40 @@ export function MobileNav({ tenant, profile, role, shopCode }: MobileNavProps) {
           </nav>
 
           <div className="p-4 border-t border-slate-200">
-            <form action={logoutAction}>
-              <Button
-                type="submit"
-                variant="ghost"
-                size="sm"
-                className="w-full justify-start text-xs text-slate-600 hover:text-red-600 hover:bg-red-50"
-              >
-                <LogOut className="w-4 h-4 mr-2 text-slate-400" />
-                Sign Out
-              </Button>
-            </form>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="w-full justify-start text-xs text-slate-600 hover:text-red-600 hover:bg-red-50 cursor-pointer"
+                >
+                  <LogOut className="w-4 h-4 mr-2 text-slate-400" />
+                  Sign Out
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent className="bg-white border-slate-200 text-slate-900 max-w-sm">
+                <AlertDialogHeader>
+                  <AlertDialogTitle className="text-sm font-semibold text-slate-900">
+                    Confirm Sign Out
+                  </AlertDialogTitle>
+                  <AlertDialogDescription className="text-xs text-slate-500">
+                    Are you sure you want to end your session? You will need to sign in again to access your store.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter className="gap-2 sm:gap-0">
+                  <AlertDialogCancel className="text-xs h-8">Cancel</AlertDialogCancel>
+                  <form action={logoutAction}>
+                    <AlertDialogAction
+                      type="submit"
+                      className="text-xs h-8 bg-red-600 hover:bg-red-700 text-white"
+                    >
+                      Sign Out
+                    </AlertDialogAction>
+                  </form>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         </SheetContent>
       </Sheet>

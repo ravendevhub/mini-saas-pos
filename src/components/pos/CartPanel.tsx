@@ -4,6 +4,17 @@ import { CartItem } from "@/types";
 import { formatCurrency } from "@/lib/formatters";
 import { Button } from "@/components/ui/button";
 import { Plus, Minus, Trash2, ShoppingCart, ArrowRight } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface CartPanelProps {
   items: CartItem[];
@@ -37,14 +48,36 @@ export function CartPanel({
           </span>
         </div>
         {items.length > 0 && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onClearCart}
-            className="text-[11px] h-7 px-2 text-slate-500 hover:text-red-600"
-          >
-            Clear
-          </Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-[11px] h-7 px-2 text-slate-500 hover:text-red-600 cursor-pointer"
+              >
+                Clear
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent className="bg-white border-slate-200 text-slate-900 max-w-sm">
+              <AlertDialogHeader>
+                <AlertDialogTitle className="text-sm font-semibold text-slate-900">
+                  Clear Active Order?
+                </AlertDialogTitle>
+                <AlertDialogDescription className="text-xs text-slate-500">
+                  All {totalItemsCount} {totalItemsCount === 1 ? "item" : "items"} currently in this cart will be removed.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter className="gap-2 sm:gap-0">
+                <AlertDialogCancel className="text-xs h-8">Keep Order</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={onClearCart}
+                  className="text-xs h-8 bg-red-600 hover:bg-red-700 text-white"
+                >
+                  Clear Order
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         )}
       </div>
 
