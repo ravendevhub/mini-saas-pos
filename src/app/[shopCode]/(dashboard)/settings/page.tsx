@@ -5,6 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Store, CreditCard, Package, Users, CheckCircle2, Receipt } from "lucide-react";
 import { TenantWithPlan } from "@/types";
+import { getActivePaymentMethodsAction, getStoreSubscriptionRequestsAction } from "@/actions/subscription";
+import { PlanUpgradeDialog } from "@/components/settings/PlanUpgradeDialog";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -34,7 +36,14 @@ export default async function StoreSettingsPage({
   monthStart.setDate(1);
   monthStart.setHours(0, 0, 0, 0);
 
-  const [productCountRes, staffCountRes, allPlansRes, monthSalesRes] = await Promise.all([
+  const [
+    productCountRes, 
+    staffCountRes, 
+    allPlansRes, 
+    monthSalesRes,
+    paymentMethodsRes,
+    requestsRes
+  ] = await Promise.all([
     supabase
       .from("products")
       .select("*", { count: "exact", head: true })
@@ -52,12 +61,17 @@ export default async function StoreSettingsPage({
       .select("*", { count: "exact", head: true })
       .eq("tenant_id", typedTenant.id)
       .gte("created_at", monthStart.toISOString()),
+    getActivePaymentMethodsAction(),
+    getStoreSubscriptionRequestsAction(typedTenant.id),
   ]);
 
   const productCount = productCountRes.count;
   const staffCount = staffCountRes.count;
   const allPlans = allPlansRes.data;
   const monthSalesCount = monthSalesRes.count || 0;
+  const paymentMethods = paymentMethodsRes.data || [];
+  const requests = requestsRes.data || [];
+  const pendingRequest = requests.find((r) => r.status === "pending") || null;
 
   const currentPlan = typedTenant.subscription_plans;
   const maxProducts = currentPlan?.max_products || 30;
@@ -194,57 +208,14 @@ export default async function StoreSettingsPage({
 
       <div className="space-y-3">
         <h2 className="text-sm font-semibold text-slate-900">Available Subscription Plans</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          {allPlans?.map((plan) => {
-            const isCurrent = plan.id === typedTenant.plan_id;
-
-            return (
-              <div
-                key={plan.id}
-                className={`p-4 rounded-lg border bg-white flex flex-col justify-between ${
-                  isCurrent ? "border-indigo-600 shadow-sm ring-1 ring-indigo-600" : "border-slate-200"
-                }`}
-              >
-                <div>
-                  <div className="flex justify-between items-center mb-1">
-                    <h3 className="text-sm font-bold text-slate-900">{plan.name}</h3>
-                    {isCurrent && (
-                      <Badge className="bg-indigo-600 text-white text-[10px]">Current Plan</Badge>
-                    )}
-                  </div>
-                  <div className="text-xl font-bold font-mono text-slate-900 mb-3 tabular-nums">
-                    {formatCurrency(plan.price_per_month)}
-                    <span className="text-xs font-normal text-slate-500"> / month</span>
-                  </div>
-
-                  <ul className="space-y-1.5 text-xs text-slate-600 mb-4">
-                    <li className="flex items-center gap-1.5">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-green-600" />
-                      <span>Up to {plan.max_products.toLocaleString()} catalog products</span>
-                    </li>
-                    <li className="flex items-center gap-1.5">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-green-600" />
-                      <span>Up to {plan.max_staff} staff cashier seats</span>
-                    </li>
-                    <li className="flex items-center gap-1.5">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-green-600" />
-                      <span>Up to {(plan.max_orders_per_month || 500).toLocaleString()} monthly vouchers (vr)</span>
-                    </li>
-                    <li className="flex items-center gap-1.5">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-green-600" />
-                      <span>Realtime aggregated sales reports</span>
-                    </li>
-                  </ul>
-                </div>
-
-                <p className="text-[10px] text-slate-400 text-center border-t border-slate-100 pt-2">
-                  Contact founder admin for immediate plan upgrades.
-                </p>
-              </div>
-            );
-          })}
-        </div>
+        <PlanUpgradeDialog
+          currentPlanId={typedTenant.plan_id}
+          plans={allPlans || []}
+          paymentMethods={paymentMethods}
+          pendingRequest={pendingRequest}
+        />
       </div>
     </div>
   );
 }
+

@@ -79,3 +79,36 @@ export interface ProfileWithRole extends Profile {
 export interface TenantWithPlan extends Tenant {
   subscription_plans?: SubscriptionPlan;
 }
+
+export interface FounderPaymentMethod {
+  id: string;
+  provider_name: string;
+  account_name: string;
+  account_number: string;
+  qr_code_url: string | null;
+  instructions: string | null;
+  is_active: boolean;
+  display_order: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SubscriptionPaymentRequest {
+  id: string;
+  tenant_id: string;
+  requested_plan_id: string;
+  payment_method_id: string | null;
+  payment_method_name: string;
+  sender_name: string | null;
+  sender_phone: string | null;
+  transaction_ref: string | null;
+  slip_url: string;
+  amount: number;
+  status: "pending" | "approved" | "rejected";
+  admin_notes: string | null;
+  reviewed_at: string | null;
+  created_at: string;
+  updated_at: string;
+  tenants?: Tenant;
+  subscription_plans?: SubscriptionPlan;
+}

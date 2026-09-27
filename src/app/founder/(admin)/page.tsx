@@ -1,18 +1,28 @@
-import { getFounderStatsAction, getFounderTenantsAction, getFounderPlansAction } from "@/actions/founder";
+import { 
+  getFounderStatsAction, 
+  getFounderTenantsAction, 
+  getFounderPlansAction,
+  getFounderPaymentMethodsAction,
+  getFounderSubscriptionRequestsAction
+} from "@/actions/founder";
 import { formatCurrency } from "@/lib/formatters";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FounderTenantsTable } from "@/components/founder/FounderTenantsTable";
 import { FounderPlansCard } from "@/components/founder/FounderPlansCard";
+import { FounderPaymentMethodsCard } from "@/components/founder/FounderPaymentMethodsCard";
+import { FounderSubscriptionRequestsCard } from "@/components/founder/FounderSubscriptionRequestsCard";
 import { Store, DollarSign, CheckCircle2, ShoppingBag } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export default async function FounderAdminPage() {
-  const [statsRes, tenantsRes, plansRes] = await Promise.all([
+  const [statsRes, tenantsRes, plansRes, paymentMethodsRes, subscriptionRequestsRes] = await Promise.all([
     getFounderStatsAction(),
     getFounderTenantsAction(),
     getFounderPlansAction(),
+    getFounderPaymentMethodsAction(),
+    getFounderSubscriptionRequestsAction(),
   ]);
 
   const stats = statsRes.data || {
@@ -24,6 +34,8 @@ export default async function FounderAdminPage() {
 
   const tenants = tenantsRes.data || [];
   const plans = plansRes.data || [];
+  const paymentMethods = paymentMethodsRes.data || [];
+  const subscriptionRequests = subscriptionRequestsRes.data || [];
 
   return (
     <div className="space-y-6 w-full">
@@ -96,7 +108,11 @@ export default async function FounderAdminPage() {
         </Card>
       </div>
 
+      <FounderSubscriptionRequestsCard initialRequests={subscriptionRequests} />
+
       <FounderPlansCard plans={plans} tenants={tenants} />
+
+      <FounderPaymentMethodsCard initialMethods={paymentMethods} />
 
       <div className="space-y-3">
         <h3 className="text-sm font-semibold text-slate-900">Registered Merchant Stores</h3>

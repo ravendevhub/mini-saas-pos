@@ -24,3 +24,32 @@ export const UpdateSubscriptionPlanSchema = z.object({
   max_orders_per_month: z.number().int().positive("Monthly voucher limit must be greater than 0"),
   can_view_reports: z.boolean().default(true),
 });
+
+export const FounderPaymentMethodSchema = z.object({
+  id: z.string().uuid().optional(),
+  provider_name: z.string().min(2, "Provider name must be at least 2 characters"),
+  account_name: z.string().min(2, "Account name must be at least 2 characters"),
+  account_number: z.string().min(2, "Account number must be at least 2 characters"),
+  qr_code_url: z.string().nullable().optional(),
+  instructions: z.string().nullable().optional(),
+  is_active: z.boolean().default(true),
+  display_order: z.number().int().default(0),
+});
+
+export const ReviewSubscriptionRequestSchema = z.object({
+  requestId: z.string().uuid("Invalid request ID"),
+  action: z.enum(["approve", "reject"]),
+  adminNotes: z.string().optional(),
+});
+
+export const SubmitSubscriptionRequestSchema = z.object({
+  requested_plan_id: z.string().min(1, "Plan selection is required"),
+  payment_method_id: z.string().uuid().nullable().optional(),
+  payment_method_name: z.string().min(1, "Payment method is required"),
+  sender_name: z.string().min(2, "Sender name must be at least 2 characters"),
+  sender_phone: z.string().min(5, "Sender phone must be at least 5 digits"),
+  transaction_ref: z.string().nullable().optional(),
+  slip_url: z.string().min(10, "Payment slip screenshot is required"),
+  amount: z.number().min(0),
+});
+
