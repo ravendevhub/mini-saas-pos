@@ -47,7 +47,7 @@ export default async function StoreSettingsPage({
   const maxStaff = currentPlan?.max_staff || 1;
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto">
+    <div className="space-y-6 w-full">
       <div className="flex flex-col gap-1">
         <h1 className="text-xl font-semibold text-slate-900">Store & Subscription</h1>
         <p className="text-xs text-slate-500">

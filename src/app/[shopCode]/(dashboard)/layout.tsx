@@ -16,6 +16,11 @@ export default async function DashboardLayout({
   const { shopCode } = await params;
   const supabase = await createClient();
 
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) {
+    redirect("/login");
+  }
+
   const { data: tenant, error: tenantError } = await supabase
     .from("tenants")
     .select(`
@@ -27,11 +32,6 @@ export default async function DashboardLayout({
 
   if (tenantError || !tenant) {
     notFound();
-  }
-
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-  if (authError || !user) {
-    redirect("/login");
   }
 
   const { data: profile, error: profileError } = await supabase

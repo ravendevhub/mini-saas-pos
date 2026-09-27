@@ -32,7 +32,7 @@ export default function LoginPage() {
         if (res.data?.isSuperAdmin) {
           router.push("/founder");
         } else if (res.data?.shopCode) {
-          router.push(`/${res.data.shopCode}/pos`);
+          router.push(`/${res.data.shopCode}/dashboard`);
         } else {
           router.push("/login");
         }
@@ -51,7 +51,7 @@ export default function LoginPage() {
         <CardHeader className="p-4 sm:p-6 space-y-1">
           <CardTitle className="text-xl font-semibold text-slate-900">Sign In</CardTitle>
           <CardDescription className="text-xs text-slate-500">
-            Enter your credentials to access your store terminal or console.
+            Enter your credentials to access your merchant store.
           </CardDescription>
         </CardHeader>
         <CardContent className="p-4 sm:p-6 pt-0">
@@ -102,6 +102,11 @@ export default function LoginPage() {
               <span className="text-xs text-slate-500">New merchant? </span>
               <Link href="/register" className="text-xs font-medium text-indigo-600 hover:underline">
                 Register Store
+              </Link>
+            </div>
+            <div className="pt-3 border-t border-slate-100 text-center">
+              <Link href="/founder/login" className="text-[11px] text-slate-400 hover:text-indigo-600 transition-colors">
+                Platform Founder Console Sign In →
               </Link>
             </div>
           </form>

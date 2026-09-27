@@ -37,7 +37,7 @@ export default async function UsersPage() {
     .order("created_at", { ascending: true });
 
   return (
-    <div className="space-y-4 max-w-7xl mx-auto">
+    <div className="space-y-4 w-full">
       <div className="flex flex-col gap-1">
         <h1 className="text-xl font-semibold text-slate-900">Staff Management</h1>
         <p className="text-xs text-slate-500">

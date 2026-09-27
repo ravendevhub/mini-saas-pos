@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { 
+  LayoutDashboard,
   ShoppingCart, 
   Package, 
   Receipt, 
@@ -19,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
 const ICON_MAP = {
+  LayoutDashboard,
   ShoppingCart,
   Package,
   Receipt,

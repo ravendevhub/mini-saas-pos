@@ -21,7 +21,7 @@ export default async function HomePage() {
 
   const tenant = profile?.tenants as unknown as { shop_code?: string } | null;
   if (tenant?.shop_code) {
-    redirect(`/${tenant.shop_code}/pos`);
+    redirect(`/${tenant.shop_code}/dashboard`);
   }
 
   redirect("/login");

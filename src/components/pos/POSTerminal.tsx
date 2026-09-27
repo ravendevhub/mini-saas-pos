@@ -138,14 +138,14 @@ export function POSTerminal({ products }: POSTerminalProps) {
   );
 
   return (
-    <div className="space-y-4 max-w-7xl mx-auto pb-20 lg:pb-0">
+    <div className="space-y-4 w-full pb-20 lg:pb-0">
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-xl font-semibold text-slate-900">Point of Sale</h1>
           <p className="text-xs text-slate-500">Scan or select items to ring up customer sales.</p>
         </div>
 
-        <div className="relative w-full sm:w-64">
+        <div className="relative w-full sm:w-72">
           <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
           <Input
             value={search}
@@ -156,8 +156,8 @@ export function POSTerminal({ products }: POSTerminalProps) {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
-        <div className="lg:col-span-8 space-y-3">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start w-full">
+        <div className="lg:col-span-8 xl:col-span-8 2xl:col-span-9 space-y-3 min-w-0">
           {filteredProducts.length === 0 ? (
             <EmptyState
               icon={ShoppingBag}
@@ -169,7 +169,7 @@ export function POSTerminal({ products }: POSTerminalProps) {
               }
             />
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3">
               {filteredProducts.map((product) => {
                 const inCart = cart.find((i) => i.product.id === product.id)?.quantity || 0;
                 return (
@@ -185,7 +185,7 @@ export function POSTerminal({ products }: POSTerminalProps) {
           )}
         </div>
 
-        <div className="hidden lg:block lg:col-span-4 sticky top-4 h-[calc(100vh-140px)]">
+        <div className="hidden lg:block lg:col-span-4 xl:col-span-4 2xl:col-span-3 sticky top-4 h-[calc(100vh-140px)] min-w-[280px]">
           <CartPanel
             items={cart}
             onUpdateQuantity={handleUpdateQuantity}

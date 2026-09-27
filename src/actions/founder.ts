@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { UpdateTenantPlanSchema, UpdateTenantStatusSchema, ExtendSubscriptionSchema } from "@/validations/founder";
+import { LoginSchema } from "@/validations/auth";
 import { ActionResponse, FounderTenantSummary, TenantWithPlan, Profile } from "@/types";
 import { revalidatePath } from "next/cache";
 
@@ -199,4 +200,41 @@ export async function extendSubscriptionAction(formData: unknown): Promise<Actio
 
   revalidatePath("/founder");
   return { success: true };
+}
+
+export async function founderLoginAction(formData: unknown): Promise<ActionResponse> {
+  try {
+    const validated = LoginSchema.safeParse(formData);
+    if (!validated.success) {
+      return { success: false, error: validated.error.issues[0]?.message || "Validation error." };
+    }
+
+    const supabase = await createClient();
+    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+      email: validated.data.email,
+      password: validated.data.password,
+    });
+
+    if (authError || !authData.user) {
+      return { success: false, error: authError?.message || "Invalid founder credentials." };
+    }
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("is_super_admin")
+      .eq("id", authData.user.id)
+      .single();
+
+    if (!profile?.is_super_admin) {
+      await supabase.auth.signOut();
+      return {
+        success: false,
+        error: "Access denied. Only platform founder administrators can access this portal.",
+      };
+    }
+
+    return { success: true };
+  } catch {
+    return { success: false, error: "An unexpected error occurred during founder sign in." };
+  }
 }

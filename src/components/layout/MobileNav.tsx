@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { 
   Menu, 
   Store, 
+  LayoutDashboard,
   ShoppingCart, 
   Package, 
   Receipt, 
@@ -22,6 +23,7 @@ import { Role, TenantWithPlan, Profile } from "@/types";
 import { logoutAction } from "@/actions/auth";
 
 const ICON_MAP = {
+  LayoutDashboard,
   ShoppingCart,
   Package,
   Receipt,
