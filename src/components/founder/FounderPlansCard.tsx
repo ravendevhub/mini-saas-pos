@@ -171,9 +171,9 @@ export function FounderPlansCard({ plans, tenants }: FounderPlansCardProps) {
                   variant="outline"
                   size="sm"
                   onClick={() => handleOpenEdit(plan)}
-                  className="w-full h-8 text-xs border-slate-200 hover:bg-slate-50 text-slate-700"
+                  className="w-full h-8 text-xs font-medium border-slate-300 bg-white text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-300 shadow-2xs active:scale-[0.98] transition-all"
                 >
-                  <Edit2 className="w-3 h-3 mr-1.5" />
+                  <Edit2 className="w-3.5 h-3.5 mr-1.5" />
                   Edit Tier Specs
                 </Button>
               </CardContent>

@@ -21,12 +21,12 @@ export function ProductCard({ product, onAddToCart, cartQuantity }: ProductCardP
       type="button"
       disabled={isOutOfStock || isMaxInCart}
       onClick={() => onAddToCart(product)}
-      className={`text-left p-3 rounded-lg border bg-white flex flex-col justify-between transition-all duration-150 h-32 select-none relative ${
+      className={`group text-left p-3 rounded-lg border bg-white flex flex-col justify-between transition-all duration-150 h-32 select-none relative ${
         isOutOfStock
           ? "border-slate-200 opacity-50 cursor-not-allowed bg-slate-50"
           : isMaxInCart
           ? "border-amber-300 bg-amber-50/20 cursor-not-allowed"
-          : "border-slate-200 hover:border-indigo-400 hover:shadow-sm active:scale-[0.98] cursor-pointer"
+          : "border-slate-200 hover:border-indigo-500 hover:shadow-md hover:bg-indigo-50/10 active:scale-[0.97] cursor-pointer"
       }`}
     >
       <div>
@@ -61,7 +61,7 @@ export function ProductCard({ product, onAddToCart, cartQuantity }: ProductCardP
           </div>
         </div>
 
-        <div className="w-6 h-6 rounded bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-indigo-50 hover:text-indigo-600">
+        <div className="w-6 h-6 rounded bg-slate-100 flex items-center justify-center text-slate-600 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-150">
           <Plus className="w-3.5 h-3.5" />
         </div>
       </div>

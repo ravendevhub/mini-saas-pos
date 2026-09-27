@@ -123,6 +123,22 @@
   html {
     @apply font-sans;
   }
+  button,
+  [role="button"],
+  a,
+  input[type="button"],
+  input[type="submit"],
+  input[type="reset"],
+  select,
+  summary {
+    cursor: pointer;
+  }
+  button:active:not(:disabled),
+  [role="button"]:active:not(:disabled),
+  a:active {
+    transform: scale(0.98);
+    transition-duration: 75ms;
+  }
 }
 
 @media print {

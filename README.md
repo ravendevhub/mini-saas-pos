@@ -4,7 +4,7 @@ A modern, high-performance, multi-tenant cloud Point of Sale (POS) and inventory
 
 ---
 
-## 🎨 Typography & Fonts
+## Typography & Fonts
 
 This project implements the official **SaaS & ERP typography standard** loaded via `next/font/google`:
 
@@ -15,7 +15,7 @@ This project implements the official **SaaS & ERP typography standard** loaded v
   - High-precision Google monospace typeface paired with `tabular-nums`.
   - Applied to all currency amounts, item prices, SKU barcodes, receipt IDs, transaction totals, quantities, and timestamps so numerical figures align vertically in data tables, receipts, and analytics charts.
 
-### 📐 Standard Typographic Hierarchy & Scale
+### Standard Typographic Hierarchy & Scale
 | Level | Font Size | Weight | Tailwind Utility | Purpose |
 | :--- | :--- | :--- | :--- | :--- |
 | **Page Title** | `24px` | `600` (SemiBold) | `text-2xl font-semibold` | Screen titles & dashboard headers |
@@ -30,7 +30,7 @@ This project implements the official **SaaS & ERP typography standard** loaded v
 
 ---
 
-## 🛠️ Complete Tech Stack & Libraries
+## Complete Tech Stack & Libraries
 
 ### Core Framework & Runtime
 - **Next.js 16 (App Router)**: Utilizing React Server Components (RSC) for data fetching, Server Actions for mutations, dynamic routing (`/[shopCode]`), and Turbopack for compilation.
@@ -62,7 +62,7 @@ This project implements the official **SaaS & ERP typography standard** loaded v
 
 ---
 
-## 🚀 Key Modules & Functional Architecture
+## Key Modules & Functional Architecture
 
 ### 1. Store Executive Dashboard (`/[shopCode]/dashboard`)
 - Realtime revenue figures, today's order counts, low-stock warnings, and top-moving products.
@@ -104,7 +104,7 @@ This project implements the official **SaaS & ERP typography standard** loaded v
 
 ---
 
-## 📁 Project Directory Structure
+## Project Directory Structure
 
 ```text
 src/
@@ -147,7 +147,7 @@ src/
 
 ---
 
-## ⚙️ Environment Variables
+## Environment Variables
 
 Create a `.env.local` file in the project root:
 
@@ -162,7 +162,7 @@ SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### 1. Installation
 
@@ -198,6 +198,6 @@ npm run start
 
 ---
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License.

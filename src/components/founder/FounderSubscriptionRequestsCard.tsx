@@ -99,16 +99,16 @@ export function FounderSubscriptionRequestsCard({ initialRequests }: FounderSubs
           )}
         </div>
 
-        <div className="flex items-center gap-1 bg-slate-100 p-0.5 rounded-lg border border-slate-200 self-start sm:self-auto">
+        <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg border border-slate-200 self-start sm:self-auto">
           {(["all", "pending", "approved", "rejected"] as const).map((tab) => (
             <button
               key={tab}
               type="button"
               onClick={() => setFilter(tab)}
-              className={`text-xs px-2.5 py-1 rounded-md font-medium transition-colors capitalize ${
+              className={`text-xs px-3 py-1.5 rounded-md font-medium transition-all duration-150 capitalize cursor-pointer active:scale-95 ${
                 filter === tab
-                  ? "bg-white text-slate-900 shadow-sm"
-                  : "text-slate-600 hover:text-slate-900"
+                  ? "bg-white text-indigo-600 shadow-xs font-semibold border border-slate-200"
+                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/60"
               }`}
             >
               {tab}
