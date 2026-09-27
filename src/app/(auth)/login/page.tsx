@@ -54,43 +54,41 @@ export default function LoginPage() {
           sizes="100vw"
           className="object-cover object-center"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-slate-950/60 via-slate-950/30 to-slate-950/50" />
+        <div className="absolute inset-0 bg-slate-950/25 backdrop-brightness-[0.95]" />
       </div>
 
       <header className="relative z-10 p-6 sm:p-8">
-        <div className="flex items-center gap-2.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-white shadow-sm">
-            <ShoppingBag className="h-5 w-5 text-indigo-400" />
-          </div>
-          <span className="text-xl font-bold tracking-tight text-white">
-            Mini SaaS <span className="text-indigo-400">POS</span>
+        <div className="flex items-center gap-3">
+          <ShoppingBag className="h-7 w-7 text-white stroke-[2.2]" />
+          <span className="text-xl font-bold tracking-tight text-white drop-shadow-sm">
+            Mini SaaS <span className="text-indigo-300">POS</span>
           </span>
         </div>
       </header>
 
       <main className="relative z-10 flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-12 py-8">
         <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
-          <div className="hidden lg:flex lg:col-span-6 flex-col justify-center space-y-6 text-white pr-4">
+          <div className="hidden lg:flex lg:col-span-6 flex-col justify-center space-y-5 text-white pr-6">
             <div className="space-y-4">
-              <h1 className="text-4xl sm:text-5xl xl:text-6xl font-extrabold tracking-tight leading-[1.15]">
+              <h1 className="text-4xl sm:text-5xl xl:text-6xl font-extrabold tracking-tight leading-[1.12] drop-shadow-md">
                 Run Your <br />
                 Store{" "}
-                <span className="bg-gradient-to-r from-indigo-300 via-purple-300 to-indigo-400 bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-indigo-200 via-purple-200 to-blue-200 bg-clip-text text-transparent">
                   Smarter
                 </span>
               </h1>
-              <div className="h-1 w-12 rounded-full bg-gradient-to-r from-indigo-400 to-purple-400" />
-              <p className="max-w-md text-base sm:text-lg text-slate-200/90 leading-relaxed font-normal">
+              <div className="h-1 w-12 rounded-full bg-gradient-to-r from-indigo-400 to-purple-400 shadow-sm" />
+              <p className="max-w-md text-base sm:text-lg text-slate-100 leading-relaxed font-normal drop-shadow-sm">
                 A modern, cloud-based POS designed for growing retail businesses.
               </p>
             </div>
           </div>
 
           <div className="lg:col-span-6 flex justify-center lg:justify-end">
-            <div className="w-full max-w-[420px] rounded-3xl bg-white/25 backdrop-blur-2xl border border-white/40 shadow-2xl p-7 sm:p-9 text-slate-900 transition-all">
-              <div className="flex items-center gap-2.5 mb-6">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-md shadow-indigo-600/30">
-                  <ShoppingBag className="h-5 w-5" />
+            <div className="w-full max-w-[420px] rounded-3xl bg-white/65 backdrop-blur-3xl border border-white/80 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.35)] p-7 sm:p-9 text-slate-900 ring-1 ring-white/60 transition-all">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-indigo-50 border border-indigo-100 text-indigo-600 shadow-sm">
+                  <ShoppingBag className="h-5 w-5 text-indigo-600" />
                 </div>
                 <h2 className="text-xl font-bold tracking-tight text-slate-900">
                   Mini SaaS <span className="text-indigo-600">POS</span>
@@ -101,7 +99,7 @@ export default function LoginPage() {
                 <ErrorBanner message={errorMessage} />
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-800" htmlFor="email">
+                  <label className="text-xs font-semibold text-slate-700" htmlFor="email">
                     Email
                   </label>
                   <div className="relative flex items-center">
@@ -113,13 +111,13 @@ export default function LoginPage() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="Enter your email"
-                      className="h-11 rounded-xl border-white/60 bg-white/80 pl-10 pr-4 text-sm text-slate-900 placeholder:text-slate-400 shadow-sm focus:border-indigo-600 focus:bg-white focus:ring-2 focus:ring-indigo-600/20"
+                      className="h-11 rounded-xl border-slate-200/80 bg-white pl-10 pr-4 text-sm text-slate-900 placeholder:text-slate-400 shadow-sm focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/20"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-800" htmlFor="password">
+                  <label className="text-xs font-semibold text-slate-700" htmlFor="password">
                     Password
                   </label>
                   <div className="relative flex items-center">
@@ -131,12 +129,12 @@ export default function LoginPage() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="••••••••••••"
-                      className="h-11 rounded-xl border-white/60 bg-white/80 pl-10 pr-10 text-sm text-slate-900 placeholder:text-slate-400 shadow-sm focus:border-indigo-600 focus:bg-white focus:ring-2 focus:ring-indigo-600/20"
+                      className="h-11 rounded-xl border-slate-200/80 bg-white pl-10 pr-10 text-sm text-slate-900 placeholder:text-slate-400 shadow-sm focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/20"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3.5 flex items-center text-slate-500 hover:text-slate-700 transition-colors"
+                      className="absolute right-3.5 flex items-center text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
                       aria-label={showPassword ? "Hide password" : "Show password"}
                     >
                       {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -147,7 +145,7 @@ export default function LoginPage() {
                 <Button
                   type="submit"
                   disabled={isPending}
-                  className="w-full h-11 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-medium rounded-xl shadow-lg shadow-indigo-600/25 flex items-center justify-center gap-2 text-sm mt-2 transition-all cursor-pointer"
+                  className="w-full h-11 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 active:from-blue-800 active:to-indigo-800 text-white font-medium rounded-xl shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2 text-sm mt-3 transition-all cursor-pointer"
                 >
                   {isPending ? (
                     <>
@@ -163,16 +161,16 @@ export default function LoginPage() {
                 </Button>
 
                 <div className="text-center pt-2">
-                  <span className="text-xs text-slate-700 font-medium">New here? </span>
-                  <Link href="/register" className="text-xs font-semibold text-indigo-700 hover:text-indigo-800 hover:underline">
+                  <span className="text-xs text-slate-600">New here? </span>
+                  <Link href="/register" className="text-xs font-semibold text-blue-600 hover:text-blue-700 hover:underline">
                     Create Account
                   </Link>
                 </div>
 
-                <div className="pt-3 border-t border-slate-300/40 text-center">
+                <div className="pt-3 border-t border-slate-200/60 text-center">
                   <Link
                     href="/founder/login"
-                    className="text-[11px] font-medium text-slate-600 hover:text-indigo-700 transition-colors"
+                    className="text-[11px] font-medium text-slate-500 hover:text-indigo-600 transition-colors"
                   >
                     Platform Founder Console Sign In →
                   </Link>
