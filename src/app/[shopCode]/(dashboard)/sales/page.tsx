@@ -30,8 +30,7 @@ export default async function SalesPage({
         is_super_admin,
         role_id,
         roles:role_id (
-          can_view_reports,
-          can_view_sales
+          can_view_reports
         )
       `)
       .eq("id", user?.id || "")
@@ -47,12 +46,11 @@ export default async function SalesPage({
 
   const permissions = profile?.roles as unknown as {
     can_view_reports?: boolean;
-    can_view_sales?: boolean;
   } | null;
 
   const isSuperAdmin = Boolean(profile?.is_super_admin);
   const isOwner = profile?.role_id === "owner";
-  const canView = Boolean(isSuperAdmin || isOwner || permissions?.can_view_sales || permissions?.can_view_reports);
+  const canView = Boolean(isSuperAdmin || isOwner || permissions?.can_view_reports);
 
   if (!canView) {
     return (

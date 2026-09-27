@@ -142,16 +142,16 @@
 }
 
 [data-sonner-toaster] {
-  --width: fit-content !important;
-  width: auto !important;
+  --width: 340px !important;
 }
 
 [data-sonner-toast] {
-  width: fit-content !important;
-  min-width: auto !important;
-  max-width: min(400px, calc(100vw - 32px)) !important;
-  padding: 8px 14px !important;
+  width: var(--width) !important;
+  min-width: 280px !important;
+  max-width: min(340px, calc(100vw - 32px)) !important;
+  padding: 10px 14px !important;
   border-radius: 8px !important;
+  white-space: normal !important;
 }
 
 @media print {

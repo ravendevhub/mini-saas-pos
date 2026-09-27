@@ -28,15 +28,15 @@ export interface Role {
   can_manage_products: boolean;
   can_create_sales: boolean;
   can_view_reports: boolean;
-  can_view_products: boolean;
-  can_create_products: boolean;
-  can_edit_products: boolean;
-  can_delete_products: boolean;
-  can_view_sales: boolean;
-  can_delete_sales: boolean;
-  can_view_users: boolean;
-  can_create_users: boolean;
-  can_delete_users: boolean;
+  can_view_products?: boolean;
+  can_create_products?: boolean;
+  can_edit_products?: boolean;
+  can_delete_products?: boolean;
+  can_view_sales?: boolean;
+  can_delete_sales?: boolean;
+  can_view_users?: boolean;
+  can_create_users?: boolean;
+  can_delete_users?: boolean;
 }
 
 export interface Profile {

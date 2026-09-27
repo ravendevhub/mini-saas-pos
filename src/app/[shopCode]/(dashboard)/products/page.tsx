@@ -39,10 +39,7 @@ export default async function ProductsPage({
       role_id,
       roles:role_id (
         can_manage_products,
-        can_view_products,
-        can_create_products,
-        can_edit_products,
-        can_delete_products
+        can_create_sales
       )
     `)
     .eq("id", user?.id || "")
@@ -50,18 +47,15 @@ export default async function ProductsPage({
 
   const permissions = profile?.roles as unknown as {
     can_manage_products?: boolean;
-    can_view_products?: boolean;
-    can_create_products?: boolean;
-    can_edit_products?: boolean;
-    can_delete_products?: boolean;
+    can_create_sales?: boolean;
   } | null;
 
   const isSuperAdmin = Boolean(profile?.is_super_admin);
   const isOwner = profile?.role_id === "owner";
-  const canView = Boolean(isSuperAdmin || isOwner || permissions?.can_view_products || permissions?.can_manage_products);
-  const canCreate = Boolean(isSuperAdmin || isOwner || permissions?.can_create_products || permissions?.can_manage_products);
-  const canEdit = Boolean(isSuperAdmin || isOwner || permissions?.can_edit_products || permissions?.can_manage_products);
-  const canDelete = Boolean(isSuperAdmin || isOwner || permissions?.can_delete_products || permissions?.can_manage_products);
+  const canView = Boolean(isSuperAdmin || isOwner || permissions?.can_manage_products || permissions?.can_create_sales);
+  const canCreate = Boolean(isSuperAdmin || isOwner || permissions?.can_manage_products);
+  const canEdit = Boolean(isSuperAdmin || isOwner || permissions?.can_manage_products);
+  const canDelete = Boolean(isSuperAdmin || isOwner || permissions?.can_manage_products);
 
   if (!canView) {
     return (

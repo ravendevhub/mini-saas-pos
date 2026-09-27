@@ -35,13 +35,13 @@ export const NAV_ITEMS: NavItem[] = [
     title: "Products",
     href: "/products",
     iconName: "Package",
-    requiredPermission: "can_view_products",
+    requiredPermission: "can_manage_products",
   },
   {
     title: "Sales History",
     href: "/sales",
     iconName: "Receipt",
-    requiredPermission: "can_view_sales",
+    requiredPermission: "can_view_reports",
   },
   {
     title: "Reports",
@@ -53,7 +53,7 @@ export const NAV_ITEMS: NavItem[] = [
     title: "Staff",
     href: "/users",
     iconName: "Users",
-    requiredPermission: "can_view_users",
+    requiredPermission: "can_manage_users",
   },
 ];
 

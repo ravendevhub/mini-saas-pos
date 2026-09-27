@@ -23,7 +23,7 @@ export interface ResolvedPermissions {
 }
 
 export function resolvePermissions(role: Role, isSuperAdmin: boolean): ResolvedPermissions {
-  if (isSuperAdmin) {
+  if (isSuperAdmin || role.id === "owner") {
     return {
       products: { view: true, create: true, edit: true, delete: true },
       sales: { create: true, view: true, delete: true },
@@ -32,25 +32,30 @@ export function resolvePermissions(role: Role, isSuperAdmin: boolean): ResolvedP
     };
   }
 
+  const canManageProducts = Boolean(role.can_manage_products);
+  const canManageUsers = Boolean(role.can_manage_users);
+  const canCreateSales = Boolean(role.can_create_sales);
+  const canViewReports = Boolean(role.can_view_reports);
+
   return {
     products: {
-      view: role.can_view_products,
-      create: role.can_create_products,
-      edit: role.can_edit_products,
-      delete: role.can_delete_products,
+      view: canManageProducts || canCreateSales,
+      create: canManageProducts,
+      edit: canManageProducts,
+      delete: canManageProducts,
     },
     sales: {
-      create: role.can_create_sales,
-      view: role.can_view_sales,
-      delete: role.can_delete_sales,
+      create: canCreateSales,
+      view: canViewReports,
+      delete: false,
     },
     reports: {
-      view: role.can_view_reports,
+      view: canViewReports,
     },
     users: {
-      view: role.can_view_users,
-      create: role.can_create_users,
-      delete: role.can_delete_users,
+      view: canManageUsers,
+      create: canManageUsers,
+      delete: canManageUsers,
     },
   };
 }

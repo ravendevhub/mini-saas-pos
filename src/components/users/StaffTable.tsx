@@ -147,54 +147,19 @@ export function StaffTable({
                               POS
                             </span>
                           )}
-                          {r?.can_view_products && (
-                            <span className="text-[10px] bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded font-mono">
-                              Product:View
-                            </span>
-                          )}
-                          {r?.can_create_products && (
+                          {r?.can_manage_products && (
                             <span className="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-1.5 py-0.5 rounded font-mono">
-                              Product:Create
-                            </span>
-                          )}
-                          {r?.can_edit_products && (
-                            <span className="text-[10px] bg-amber-50 text-amber-700 border border-amber-200 px-1.5 py-0.5 rounded font-mono">
-                              Product:Edit
-                            </span>
-                          )}
-                          {r?.can_delete_products && (
-                            <span className="text-[10px] bg-rose-50 text-rose-700 border border-rose-200 px-1.5 py-0.5 rounded font-mono">
-                              Product:Delete
-                            </span>
-                          )}
-                          {r?.can_view_sales && (
-                            <span className="text-[10px] bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded font-mono">
-                              Sales:View
-                            </span>
-                          )}
-                          {r?.can_delete_sales && (
-                            <span className="text-[10px] bg-rose-50 text-rose-700 border border-rose-200 px-1.5 py-0.5 rounded font-mono">
-                              Sales:Delete
+                              Products
                             </span>
                           )}
                           {r?.can_view_reports && (
-                            <span className="text-[10px] bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded font-mono">
+                            <span className="text-[10px] bg-amber-50 text-amber-700 border border-amber-200 px-1.5 py-0.5 rounded font-mono">
                               Reports
                             </span>
                           )}
-                          {r?.can_view_users && (
-                            <span className="text-[10px] bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded font-mono">
-                              Staff:View
-                            </span>
-                          )}
-                          {r?.can_create_users && (
-                            <span className="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-1.5 py-0.5 rounded font-mono">
-                              Staff:Create
-                            </span>
-                          )}
-                          {r?.can_delete_users && (
-                            <span className="text-[10px] bg-rose-50 text-rose-700 border border-rose-200 px-1.5 py-0.5 rounded font-mono">
-                              Staff:Delete
+                          {r?.can_manage_users && (
+                            <span className="text-[10px] bg-indigo-50 text-indigo-700 border border-indigo-200 px-1.5 py-0.5 rounded font-mono">
+                              Staff
                             </span>
                           )}
                         </>
