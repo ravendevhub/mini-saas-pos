@@ -1,4 +1,4 @@
-import { Product, Role, Profile, Sale, SaleItem } from "./database";
+import { Product, Role, Profile, Sale, SaleItem, TenantWithPlan } from "./database";
 
 export * from "./database";
 
@@ -29,5 +29,14 @@ export interface PopularProduct {
   id: string;
   name: string;
   totalSold: number;
+  totalRevenue: number;
+}
+
+export interface FounderTenantSummary {
+  tenant: TenantWithPlan;
+  owner: Profile | null;
+  totalProducts: number;
+  totalStaff: number;
+  totalSalesCount: number;
   totalRevenue: number;
 }

@@ -1,7 +1,21 @@
+export interface SubscriptionPlan {
+  id: "free" | "starter" | "pro" | string;
+  name: string;
+  price_per_month: number;
+  max_products: number;
+  max_staff: number;
+  can_view_reports: boolean;
+  created_at: string;
+}
+
 export interface Tenant {
   id: string;
   name: string;
   slug: string;
+  shop_code: string;
+  plan_id: string;
+  subscription_status: "active" | "suspended" | "expired";
+  subscription_expires_at: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -21,6 +35,7 @@ export interface Profile {
   role_id: "owner" | "manager" | "cashier";
   full_name: string;
   avatar_url: string | null;
+  is_super_admin: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -58,4 +73,8 @@ export interface SaleItem {
 
 export interface ProfileWithRole extends Profile {
   roles: Role;
+}
+
+export interface TenantWithPlan extends Tenant {
+  subscription_plans?: SubscriptionPlan;
 }

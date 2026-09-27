@@ -9,10 +9,11 @@ import {
   BarChart3, 
   Users, 
   LogOut, 
-  Store 
+  Store,
+  Sliders
 } from "lucide-react";
 import { NAV_ITEMS } from "@/lib/constants";
-import { Role, Tenant, Profile } from "@/types";
+import { Role, TenantWithPlan, Profile } from "@/types";
 import { logoutAction } from "@/actions/auth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -26,18 +27,21 @@ const ICON_MAP = {
 };
 
 interface AppSidebarProps {
-  tenant: Tenant;
+  tenant: TenantWithPlan;
   profile: Profile;
   role: Role;
+  shopCode: string;
 }
 
-export function AppSidebar({ tenant, profile, role }: AppSidebarProps) {
+export function AppSidebar({ tenant, profile, role, shopCode }: AppSidebarProps) {
   const pathname = usePathname();
 
   const accessibleNavItems = NAV_ITEMS.filter((item) => {
     if (!item.requiredPermission) return true;
     return role[item.requiredPermission];
   });
+
+  const planName = tenant.subscription_plans?.name || tenant.plan_id.toUpperCase();
 
   return (
     <aside className="hidden lg:flex flex-col w-64 border-r border-slate-200 bg-white shrink-0 h-screen sticky top-0">
@@ -47,19 +51,25 @@ export function AppSidebar({ tenant, profile, role }: AppSidebarProps) {
         </div>
         <div className="min-w-0 flex-1">
           <h2 className="text-sm font-semibold text-slate-900 truncate">{tenant.name}</h2>
-          <p className="text-xs text-slate-500 capitalize">{role.name}</p>
+          <div className="flex items-center gap-1.5 pt-0.5">
+            <span className="text-[10px] text-slate-400 font-mono truncate">@{shopCode}</span>
+            <Badge variant="outline" className="text-[9px] px-1 py-0 bg-indigo-50 text-indigo-700 border-indigo-200">
+              {planName}
+            </Badge>
+          </div>
         </div>
       </div>
 
       <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
         {accessibleNavItems.map((item) => {
           const Icon = ICON_MAP[item.iconName as keyof typeof ICON_MAP] || Package;
-          const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
+          const targetHref = `/${shopCode}${item.href}`;
+          const isActive = pathname === targetHref || pathname.startsWith(targetHref + "/");
 
           return (
             <Link
               key={item.href}
-              href={item.href}
+              href={targetHref}
               className={`flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md transition-colors ${
                 isActive
                   ? "bg-indigo-50 text-indigo-600"
@@ -71,6 +81,18 @@ export function AppSidebar({ tenant, profile, role }: AppSidebarProps) {
             </Link>
           );
         })}
+
+        <Link
+          href={`/${shopCode}/settings`}
+          className={`flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+            pathname.startsWith(`/${shopCode}/settings`)
+              ? "bg-indigo-50 text-indigo-600"
+              : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+          }`}
+        >
+          <Sliders className="w-4 h-4 shrink-0 text-slate-400" />
+          <span>Plan & Settings</span>
+        </Link>
       </nav>
 
       <div className="p-3 border-t border-slate-200 space-y-2">

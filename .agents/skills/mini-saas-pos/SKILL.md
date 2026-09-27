@@ -118,8 +118,8 @@ CREATE POLICY "Tenant isolation for sale_items" ON sale_items
   FOR ALL
   USING (
     EXISTS (
-      SELECT 1 FROM sales 
-      WHERE sales.id = sale_items.sale_id 
+      SELECT 1 FROM sales
+      WHERE sales.id = sale_items.sale_id
         AND sales.tenant_id = get_current_user_tenant_id()
     )
   );
@@ -158,10 +158,10 @@ BEGIN
       RAISE EXCEPTION 'Quantity must be greater than zero.';
     END IF;
 
-    SELECT id, price, stock_quantity, is_active, name 
-    INTO v_product 
-    FROM products 
-    WHERE id = v_item.product_id AND tenant_id = v_tenant_id 
+    SELECT id, price, stock_quantity, is_active, name
+    INTO v_product
+    FROM products
+    WHERE id = v_item.product_id AND tenant_id = v_tenant_id
     FOR UPDATE;
 
     IF NOT FOUND THEN
@@ -173,7 +173,7 @@ BEGIN
     END IF;
 
     IF v_product.stock_quantity < v_item.quantity THEN
-      RAISE EXCEPTION 'Insufficient stock for product "%" (Available: %, Requested: %).', 
+      RAISE EXCEPTION 'Insufficient stock for product "%" (Available: %, Requested: %).',
         v_product.name, v_product.stock_quantity, v_item.quantity;
     END IF;
 
@@ -191,7 +191,7 @@ BEGIN
     INSERT INTO sale_items (sale_id, product_id, quantity, unit_price, subtotal)
     VALUES (v_sale_id, v_item.product_id, v_item.quantity, v_product.price, (v_product.price * v_item.quantity));
 
-    UPDATE products 
+    UPDATE products
     SET stock_quantity = stock_quantity - v_item.quantity,
         updated_at = now()
     WHERE id = v_item.product_id;

@@ -14,11 +14,24 @@ import { Loader2 } from "lucide-react";
 export default function RegisterPage() {
   const router = useRouter();
   const [storeName, setStoreName] = useState("");
+  const [shopCode, setShopCode] = useState("");
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isPending, setIsPending] = useState(false);
+
+  function handleStoreNameChange(val: string) {
+    setStoreName(val);
+    if (!shopCode) {
+      const generated = val
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, "-")
+        .replace(/-+/g, "-")
+        .replace(/^-|-$/g, "");
+      setShopCode(generated);
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -28,6 +41,7 @@ export default function RegisterPage() {
     try {
       const res = await registerTenantAction({
         storeName,
+        shopCode,
         fullName,
         email,
         password,
@@ -36,7 +50,7 @@ export default function RegisterPage() {
       if (!res.success) {
         setErrorMessage(res.error || "Failed to create store.");
       } else {
-        toast.success("Store created successfully. Please sign in.");
+        toast.success("Store created successfully with a 30-day Free Trial.");
         router.push("/login");
       }
     } catch {
@@ -52,7 +66,7 @@ export default function RegisterPage() {
         <CardHeader className="p-4 sm:p-6 space-y-1">
           <CardTitle className="text-xl font-semibold text-slate-900">Create Store</CardTitle>
           <CardDescription className="text-xs text-slate-500">
-            Register your store and owner account.
+            Register your merchant account and choose a unique shop code.
           </CardDescription>
         </CardHeader>
         <CardContent className="p-4 sm:p-6 pt-0">
@@ -60,20 +74,39 @@ export default function RegisterPage() {
             <ErrorBanner message={errorMessage} />
             <div className="space-y-1">
               <label className="text-xs font-medium text-slate-700" htmlFor="storeName">
-                Store / Business Name
+                Store Name *
               </label>
               <Input
                 id="storeName"
                 required
                 value={storeName}
-                onChange={(e) => setStoreName(e.target.value)}
+                onChange={(e) => handleStoreNameChange(e.target.value)}
                 placeholder="Downtown Grocery"
                 className="h-9"
               />
             </div>
             <div className="space-y-1">
+              <label className="text-xs font-medium text-slate-700" htmlFor="shopCode">
+                Unique Shop Code *
+              </label>
+              <div className="relative">
+                <span className="absolute left-3 top-2.5 text-xs text-slate-400 font-mono">/</span>
+                <Input
+                  id="shopCode"
+                  required
+                  value={shopCode}
+                  onChange={(e) => setShopCode(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))}
+                  placeholder="downtown"
+                  className="h-9 pl-6 font-mono text-xs"
+                />
+              </div>
+              <p className="text-[10px] text-slate-400">
+                Your store terminal will be accessible at /{shopCode || "shopcode"}
+              </p>
+            </div>
+            <div className="space-y-1">
               <label className="text-xs font-medium text-slate-700" htmlFor="fullName">
-                Owner Full Name
+                Owner Full Name *
               </label>
               <Input
                 id="fullName"
@@ -86,7 +119,7 @@ export default function RegisterPage() {
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-slate-700" htmlFor="email">
-                Owner Email
+                Owner Email *
               </label>
               <Input
                 id="email"
@@ -100,7 +133,7 @@ export default function RegisterPage() {
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-slate-700" htmlFor="password">
-                Password
+                Password *
               </label>
               <Input
                 id="password"

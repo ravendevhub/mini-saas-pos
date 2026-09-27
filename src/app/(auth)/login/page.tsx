@@ -29,7 +29,13 @@ export default function LoginPage() {
         setErrorMessage(res.error || "Failed to sign in.");
       } else {
         toast.success("Signed in successfully.");
-        router.push("/pos");
+        if (res.data?.isSuperAdmin) {
+          router.push("/founder");
+        } else if (res.data?.shopCode) {
+          router.push(`/${res.data.shopCode}/pos`);
+        } else {
+          router.push("/login");
+        }
         router.refresh();
       }
     } catch {
@@ -45,7 +51,7 @@ export default function LoginPage() {
         <CardHeader className="p-4 sm:p-6 space-y-1">
           <CardTitle className="text-xl font-semibold text-slate-900">Sign In</CardTitle>
           <CardDescription className="text-xs text-slate-500">
-            Enter your credentials to access the terminal.
+            Enter your credentials to access your store terminal or console.
           </CardDescription>
         </CardHeader>
         <CardContent className="p-4 sm:p-6 pt-0">
@@ -93,7 +99,7 @@ export default function LoginPage() {
               )}
             </Button>
             <div className="text-center pt-2">
-              <span className="text-xs text-slate-500">New store owner? </span>
+              <span className="text-xs text-slate-500">New merchant? </span>
               <Link href="/register" className="text-xs font-medium text-indigo-600 hover:underline">
                 Register Store
               </Link>

@@ -16,7 +16,14 @@ export async function createProductAction(formData: unknown): Promise<ActionResp
 
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
-      .select("tenant_id, roles:role_id (can_manage_products)")
+      .select(`
+        tenant_id,
+        roles:role_id (can_manage_products),
+        tenants:tenant_id (
+          subscription_status,
+          subscription_plans:plan_id (name, max_products)
+        )
+      `)
       .eq("id", user.id)
       .single();
 
@@ -27,6 +34,29 @@ export async function createProductAction(formData: unknown): Promise<ActionResp
     const permissions = profile.roles as unknown as { can_manage_products?: boolean } | null;
     if (!permissions?.can_manage_products) {
       return { success: false, error: "Forbidden: You lack permission to manage products." };
+    }
+
+    const tenantInfo = profile.tenants as unknown as {
+      subscription_status?: string;
+      subscription_plans?: { name: string; max_products: number };
+    } | null;
+
+    if (tenantInfo?.subscription_status === "suspended") {
+      return { success: false, error: "Store subscription is currently suspended." };
+    }
+
+    const maxProductsAllowed = tenantInfo?.subscription_plans?.max_products || 30;
+
+    const { count: currentProductCount } = await supabase
+      .from("products")
+      .select("*", { count: "exact", head: true })
+      .eq("tenant_id", profile.tenant_id);
+
+    if (currentProductCount !== null && currentProductCount >= maxProductsAllowed) {
+      return {
+        success: false,
+        error: `Catalog limit of ${maxProductsAllowed} items reached on the ${tenantInfo?.subscription_plans?.name || "current"} plan. Upgrade plan to add more items.`,
+      };
     }
 
     const validated = ProductSchema.safeParse(formData);
