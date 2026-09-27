@@ -270,6 +270,19 @@ export function FounderPlansCard({ plans, tenants }: FounderPlansCardProps) {
               </div>
             </div>
 
+            <div className="flex items-center gap-2 pt-1 pb-1">
+              <input
+                type="checkbox"
+                id="can-view-reports"
+                checked={canViewReports}
+                onChange={(e) => setCanViewReports(e.target.checked)}
+                className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 w-4 h-4 cursor-pointer"
+              />
+              <label htmlFor="can-view-reports" className="text-xs font-medium text-slate-700 cursor-pointer select-none">
+                Enable Financial Reports for this tier
+              </label>
+            </div>
+
             <DialogFooter className="flex items-center justify-end gap-2 pt-3">
               <Button
                 type="button"
