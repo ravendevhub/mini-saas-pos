@@ -72,13 +72,11 @@ export async function registerTenantAction(
 
     const normalizedShopCode = validated.data.shopCode.toLowerCase().trim();
 
-    const { data: existingShop } = await supabase
-      .from("tenants")
-      .select("id")
-      .eq("shop_code", normalizedShopCode)
-      .maybeSingle();
+    const { data: isAvailable } = await supabase.rpc("check_shop_code_available", {
+      p_shop_code: normalizedShopCode,
+    });
 
-    if (existingShop) {
+    if (isAvailable === false) {
       return { success: false, error: "This shop code is already registered. Please choose another one." };
     }
 
@@ -96,39 +94,14 @@ export async function registerTenantAction(
       return { success: false, error: authError?.message || "Failed to create account." };
     }
 
-    const slug = normalizedShopCode;
-    const expiryDate = new Date();
-    expiryDate.setDate(expiryDate.getDate() + 30);
+    const { error: rpcError } = await supabase.rpc("register_store", {
+      p_store_name: validated.data.storeName,
+      p_shop_code: normalizedShopCode,
+      p_full_name: validated.data.fullName,
+    });
 
-    const { data: tenant, error: tenantError } = await supabase
-      .from("tenants")
-      .insert({
-        name: validated.data.storeName,
-        slug,
-        shop_code: normalizedShopCode,
-        plan_id: "free",
-        subscription_status: "active",
-        subscription_expires_at: expiryDate.toISOString(),
-      })
-      .select()
-      .single();
-
-    if (tenantError || !tenant) {
-      return { success: false, error: "Failed to create store record." };
-    }
-
-    const { error: profileError } = await supabase
-      .from("profiles")
-      .insert({
-        id: authData.user.id,
-        tenant_id: tenant.id,
-        role_id: "owner",
-        full_name: validated.data.fullName,
-        is_super_admin: false,
-      });
-
-    if (profileError) {
-      return { success: false, error: "Failed to establish store owner profile." };
+    if (rpcError) {
+      return { success: false, error: rpcError.message || "Failed to establish store record." };
     }
 
     return {
