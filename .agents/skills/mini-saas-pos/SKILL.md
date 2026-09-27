@@ -236,3 +236,37 @@ Never write to a cached report table. Use SQL aggregation:
   ORDER BY total_sold DESC
   LIMIT 5;
   ```
+
+---
+
+## 6. Subscription Plans & Tier Limits
+
+Subscription tiers restrict maximum allowed catalog products and staff accounts per store:
+
+```sql
+CREATE TABLE subscription_plans (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  price_per_month NUMERIC(10, 2) NOT NULL DEFAULT 0,
+  max_products INT NOT NULL,
+  max_staff INT NOT NULL,
+  can_view_reports BOOLEAN NOT NULL DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+```
+
+Default Tiers:
+- `free`: Free Trial, $0/month, max 30 products, 1 staff seat
+- `starter`: Starter Store, $15/month, max 200 products, 5 staff seats
+- `pro`: Pro Business, $35/month, max 10,000 products, 25 staff seats
+
+---
+
+## 7. Founder Super Admin Architecture
+
+Founder Super Admin console operates at `/founder` and is guarded by `profiles.is_super_admin`:
+- Platform overview across all merchants
+- Upgrade or downgrade store subscription plans
+- Suspend or activate tenant access
+- Add subscription extension days (+30 days)
+
