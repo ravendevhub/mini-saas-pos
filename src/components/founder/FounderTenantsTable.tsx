@@ -105,7 +105,7 @@ export function FounderTenantsTable({ tenants }: FounderTenantsTableProps) {
                   <div className="font-semibold text-slate-900">{tenant.name}</div>
                   <div className="flex items-center gap-1 text-[11px] text-indigo-600 font-mono">
                     <Link
-                      href={`/${tenant.shop_code}/pos`}
+                      href={`/${tenant.shop_code}/dashboard`}
                       target="_blank"
                       className="hover:underline flex items-center gap-1"
                     >

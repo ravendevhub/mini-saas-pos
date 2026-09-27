@@ -30,13 +30,12 @@ export default function LoginPage() {
       } else {
         toast.success("Signed in successfully.");
         if (res.data?.isSuperAdmin) {
-          router.push("/founder");
+          window.location.href = "/founder";
         } else if (res.data?.shopCode) {
-          router.push(`/${res.data.shopCode}/dashboard`);
+          window.location.href = `/${res.data.shopCode}/dashboard`;
         } else {
-          router.push("/login");
+          window.location.href = "/login";
         }
-        router.refresh();
       }
     } catch {
       setErrorMessage("Network error. Please try again.");
