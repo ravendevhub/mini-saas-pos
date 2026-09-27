@@ -36,9 +36,9 @@ export function ReceiptDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-sm p-4 sm:p-6 bg-white border-slate-200">
+      <DialogContent className="max-w-sm p-4 sm:p-6 bg-white border-slate-200 printable-receipt-card">
         <DialogHeader className="text-center space-y-1">
-          <div className="flex justify-center mb-1">
+          <div className="flex justify-center mb-1 no-print">
             <CheckCircle2 className="w-10 h-10 text-green-600" />
           </div>
           <DialogTitle className="text-base font-semibold text-slate-900">
@@ -79,7 +79,7 @@ export function ReceiptDialog({
           </div>
         </div>
 
-        <DialogFooter className="flex flex-col sm:flex-row gap-2 pt-3">
+        <DialogFooter className="flex flex-col sm:flex-row gap-2 pt-3 no-print">
           <Button
             type="button"
             variant="outline"

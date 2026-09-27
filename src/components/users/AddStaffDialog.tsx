@@ -8,6 +8,7 @@ import { ErrorBanner } from "@/components/common/ErrorBanner";
 import { createStaffAction } from "@/actions/users";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { recordActionLog } from "@/lib/action-logger";
 
 interface AddStaffDialogProps {
   open: boolean;
@@ -37,8 +38,18 @@ export function AddStaffDialog({ open, onOpenChange }: AddStaffDialogProps) {
 
       if (!res.success) {
         setErrorMessage(res.error || "Failed to create staff.");
+        recordActionLog({
+          action: "Add Staff",
+          status: "error",
+          details: res.error || `Failed to create staff account for ${fullName}.`,
+        });
       } else {
         toast.success("Staff member added successfully.");
+        recordActionLog({
+          action: "Add Staff",
+          status: "success",
+          details: `Staff member ${fullName} (${roleId}) registered successfully.`,
+        });
         setFullName("");
         setEmail("");
         setPassword("");
@@ -47,6 +58,11 @@ export function AddStaffDialog({ open, onOpenChange }: AddStaffDialogProps) {
       }
     } catch {
       setErrorMessage("Network error. Please try again.");
+      recordActionLog({
+        action: "Add Staff",
+        status: "error",
+        details: `Network error while registering ${fullName}.`,
+      });
     } finally {
       setIsPending(false);
     }

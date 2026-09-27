@@ -18,7 +18,7 @@ export function SaleDetailDialog({ open, onOpenChange, sale }: SaleDetailDialogP
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-sm p-4 sm:p-6 bg-white border-slate-200">
+      <DialogContent className="max-w-sm p-4 sm:p-6 bg-white border-slate-200 printable-receipt-card">
         <DialogHeader className="text-left space-y-1">
           <div className="flex items-center justify-between">
             <DialogTitle className="text-base font-semibold text-slate-900">
@@ -58,7 +58,7 @@ export function SaleDetailDialog({ open, onOpenChange, sale }: SaleDetailDialogP
           </span>
         </div>
 
-        <DialogFooter className="pt-3">
+        <DialogFooter className="pt-3 no-print">
           <Button
             type="button"
             variant="outline"

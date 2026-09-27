@@ -6,8 +6,21 @@ import { formatDateTime } from "@/lib/formatters";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { AddStaffDialog } from "./AddStaffDialog";
-import { UserPlus, Shield } from "lucide-react";
+import { deleteStaffAction } from "@/actions/users";
+import { recordActionLog } from "@/lib/action-logger";
+import { toast } from "sonner";
+import { UserPlus, Trash2 } from "lucide-react";
 
 interface StaffTableProps {
   staffList: ProfileWithRole[];
@@ -15,6 +28,42 @@ interface StaffTableProps {
 
 export function StaffTable({ staffList }: StaffTableProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<ProfileWithRole | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  async function handleConfirmDelete() {
+    if (!deleteTarget) return;
+    setIsDeleting(true);
+
+    try {
+      const res = await deleteStaffAction(deleteTarget.id);
+      if (!res.success) {
+        toast.error(res.error || "Failed to remove staff member.");
+        recordActionLog({
+          action: "Delete Staff",
+          status: "error",
+          details: res.error || `Failed to remove ${deleteTarget.full_name}.`,
+        });
+      } else {
+        toast.success(`Staff member "${deleteTarget.full_name}" removed.`);
+        recordActionLog({
+          action: "Delete Staff",
+          status: "success",
+          details: `Staff member "${deleteTarget.full_name}" successfully removed.`,
+        });
+        setDeleteTarget(null);
+      }
+    } catch {
+      toast.error("Network error while removing staff.");
+      recordActionLog({
+        action: "Delete Staff",
+        status: "error",
+        details: `Network error while removing ${deleteTarget.full_name}.`,
+      });
+    } finally {
+      setIsDeleting(false);
+    }
+  }
 
   return (
     <div className="space-y-4">
@@ -40,6 +89,7 @@ export function StaffTable({ staffList }: StaffTableProps) {
               <TableHead className="text-xs font-semibold text-slate-700">Role</TableHead>
               <TableHead className="text-xs font-semibold text-slate-700">Permissions</TableHead>
               <TableHead className="text-xs font-semibold text-slate-700 text-right">Joined</TableHead>
+              <TableHead className="text-xs font-semibold text-slate-700 text-right">Action</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -98,6 +148,21 @@ export function StaffTable({ staffList }: StaffTableProps) {
                   <TableCell className="py-2.5 text-xs text-slate-500 text-right">
                     {formatDateTime(member.created_at)}
                   </TableCell>
+                  <TableCell className="py-2.5 text-right">
+                    {!isOwner ? (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setDeleteTarget(member)}
+                        className="h-7 w-7 p-0 text-slate-400 hover:text-red-600 cursor-pointer"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span className="sr-only">Remove</span>
+                      </Button>
+                    ) : (
+                      <span className="text-[10px] text-slate-400 font-mono">Owner</span>
+                    )}
+                  </TableCell>
                 </TableRow>
               );
             })}
@@ -106,6 +171,34 @@ export function StaffTable({ staffList }: StaffTableProps) {
       </div>
 
       <AddStaffDialog open={dialogOpen} onOpenChange={setDialogOpen} />
+
+      <AlertDialog open={Boolean(deleteTarget)} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent className="bg-white border-slate-200 text-slate-900 max-w-sm p-4 sm:p-6">
+          <AlertDialogHeader className="text-left space-y-1">
+            <AlertDialogTitle className="text-base font-semibold text-slate-900">
+              Remove Staff Member?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-xs text-slate-600">
+              Are you sure you want to remove &quot;{deleteTarget?.full_name}&quot;? If this staff member has past sales records, they cannot be deleted to preserve receipt history.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex items-center justify-end gap-2 pt-3">
+            <AlertDialogCancel disabled={isDeleting} className="text-xs h-8">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              disabled={isDeleting}
+              onClick={(e) => {
+                e.preventDefault();
+                handleConfirmDelete();
+              }}
+              className="bg-red-600 hover:bg-red-700 text-white text-xs h-8"
+            >
+              {isDeleting ? "Removing..." : "Confirm Remove"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

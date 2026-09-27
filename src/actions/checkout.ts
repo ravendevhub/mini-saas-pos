@@ -50,10 +50,7 @@ export async function checkoutSaleAction(payload: unknown): Promise<ActionRespon
 
     const result = rpcResult as unknown as CheckoutResult;
 
-    revalidatePath("/pos");
-    revalidatePath("/products");
-    revalidatePath("/sales");
-    revalidatePath("/reports");
+    revalidatePath("/", "layout");
 
     return {
       success: true,

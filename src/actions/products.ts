@@ -64,6 +64,19 @@ export async function createProductAction(formData: unknown): Promise<ActionResp
       return { success: false, error: validated.error.issues[0]?.message || "Validation error." };
     }
 
+    if (validated.data.sku) {
+      const { data: existingSku } = await supabase
+        .from("products")
+        .select("id")
+        .eq("tenant_id", profile.tenant_id)
+        .eq("sku", validated.data.sku)
+        .maybeSingle();
+
+      if (existingSku) {
+        return { success: false, error: "SKU already exists in your store catalog." };
+      }
+    }
+
     const { data, error: insertError } = await supabase
       .from("products")
       .insert({
@@ -82,8 +95,7 @@ export async function createProductAction(formData: unknown): Promise<ActionResp
       return { success: false, error: "Failed to create product. Please try again." };
     }
 
-    revalidatePath("/products");
-    revalidatePath("/pos");
+    revalidatePath("/", "layout");
     return { success: true, data };
   } catch (err) {
     return { success: false, error: "An unexpected error occurred." };
@@ -122,6 +134,20 @@ export async function updateProductAction(
       return { success: false, error: validated.error.issues[0]?.message || "Validation error." };
     }
 
+    if (validated.data.sku) {
+      const { data: existingSku } = await supabase
+        .from("products")
+        .select("id")
+        .eq("tenant_id", profile.tenant_id)
+        .eq("sku", validated.data.sku)
+        .neq("id", productId)
+        .maybeSingle();
+
+      if (existingSku) {
+        return { success: false, error: "SKU already exists in your store catalog." };
+      }
+    }
+
     const { data, error: updateError } = await supabase
       .from("products")
       .update({
@@ -142,8 +168,7 @@ export async function updateProductAction(
       return { success: false, error: "Failed to update product." };
     }
 
-    revalidatePath("/products");
-    revalidatePath("/pos");
+    revalidatePath("/", "layout");
     return { success: true, data };
   } catch (err) {
     return { success: false, error: "An unexpected error occurred." };
@@ -194,8 +219,7 @@ export async function deleteProductAction(productId: string): Promise<ActionResp
         return { success: false, error: "Failed to archive product." };
       }
 
-      revalidatePath("/products");
-      revalidatePath("/pos");
+      revalidatePath("/", "layout");
       return { success: true, data: { archived: true } };
     } else {
       const { error: deleteError } = await supabase
@@ -208,8 +232,7 @@ export async function deleteProductAction(productId: string): Promise<ActionResp
         return { success: false, error: "Failed to delete product." };
       }
 
-      revalidatePath("/products");
-      revalidatePath("/pos");
+      revalidatePath("/", "layout");
       return { success: true, data: { archived: false } };
     }
   } catch (err) {

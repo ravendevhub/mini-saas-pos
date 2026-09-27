@@ -1,11 +1,26 @@
-import { redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { StaffTable } from "@/components/users/StaffTable";
 import { ProfileWithRole } from "@/types";
 import { ShieldAlert } from "lucide-react";
 
-export default async function UsersPage() {
+export default async function UsersPage({
+  params,
+}: {
+  params: Promise<{ shopCode: string }>;
+}) {
+  const { shopCode } = await params;
   const supabase = await createClient();
+
+  const { data: tenant } = await supabase
+    .from("tenants")
+    .select("id")
+    .eq("shop_code", shopCode)
+    .single();
+
+  if (!tenant) {
+    notFound();
+  }
 
   const { data: { user } } = await supabase.auth.getUser();
   const { data: currentProfile } = await supabase
@@ -34,6 +49,7 @@ export default async function UsersPage() {
       *,
       roles:role_id (*)
     `)
+    .eq("tenant_id", tenant.id)
     .order("created_at", { ascending: true });
 
   return (

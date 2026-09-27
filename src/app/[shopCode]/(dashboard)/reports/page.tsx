@@ -1,11 +1,27 @@
+import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { formatCurrency } from "@/lib/formatters";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DollarSign, ShoppingBag, Package, TrendingUp, CreditCard } from "lucide-react";
 
-export default async function ReportsPage() {
+export default async function ReportsPage({
+  params,
+}: {
+  params: Promise<{ shopCode: string }>;
+}) {
+  const { shopCode } = await params;
   const supabase = await createClient();
+
+  const { data: tenant } = await supabase
+    .from("tenants")
+    .select("id, name, shop_code")
+    .eq("shop_code", shopCode)
+    .single();
+
+  if (!tenant) {
+    notFound();
+  }
 
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
@@ -13,6 +29,7 @@ export default async function ReportsPage() {
   const { data: todaySales } = await supabase
     .from("sales")
     .select("total_amount")
+    .eq("tenant_id", tenant.id)
     .gte("created_at", todayStart.toISOString());
 
   const todayRevenue = (todaySales || []).reduce((sum, s) => sum + Number(s.total_amount), 0);
@@ -20,7 +37,8 @@ export default async function ReportsPage() {
 
   const { data: allSales } = await supabase
     .from("sales")
-    .select("total_amount, payment_method, cashier:cashier_id (full_name)");
+    .select("total_amount, payment_method, cashier:cashier_id (full_name)")
+    .eq("tenant_id", tenant.id);
 
   const totalRevenue = (allSales || []).reduce((sum, s) => sum + Number(s.total_amount), 0);
   const totalOrdersCount = allSales?.length || 0;
@@ -37,7 +55,8 @@ export default async function ReportsPage() {
 
   const { data: saleItems } = await supabase
     .from("sale_items")
-    .select("quantity, subtotal, product:product_id (id, name, sku)");
+    .select("quantity, subtotal, product:product_id (id, name, sku), sales!inner(tenant_id)")
+    .eq("sales.tenant_id", tenant.id);
 
   const productAggregates: Record<string, { name: string; sku: string | null; totalQuantity: number; totalRevenue: number }> = {};
 

@@ -1,9 +1,25 @@
+import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { SalesTable } from "@/components/sales/SalesTable";
 import { SaleWithDetails } from "@/types";
 
-export default async function SalesPage() {
+export default async function SalesPage({
+  params,
+}: {
+  params: Promise<{ shopCode: string }>;
+}) {
+  const { shopCode } = await params;
   const supabase = await createClient();
+
+  const { data: tenant } = await supabase
+    .from("tenants")
+    .select("id")
+    .eq("shop_code", shopCode)
+    .single();
+
+  if (!tenant) {
+    notFound();
+  }
 
   const { data: sales } = await supabase
     .from("sales")
@@ -18,6 +34,7 @@ export default async function SalesPage() {
         product:product_id (id, name, sku)
       )
     `)
+    .eq("tenant_id", tenant.id)
     .order("created_at", { ascending: false });
 
   return (
