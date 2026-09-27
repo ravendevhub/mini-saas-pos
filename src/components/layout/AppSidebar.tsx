@@ -9,38 +9,12 @@ import {
   Receipt, 
   BarChart3, 
   Users, 
-  LogOut, 
   Store,
-  Sliders,
-  ShieldCheck,
-  ChevronUp
+  Sliders
 } from "lucide-react";
 import { NAV_ITEMS } from "@/lib/constants";
 import { Role, TenantWithPlan, Profile } from "@/types";
-import { logoutAction } from "@/actions/auth";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 
 const ICON_MAP = {
   LayoutDashboard,
@@ -70,13 +44,6 @@ export function AppSidebar({ tenant, profile, role, shopCode, storeOwnerName }: 
 
   const planName = tenant.subscription_plans?.name || tenant.plan_id.toUpperCase();
   const isSuperAdminViewing = profile.is_super_admin && profile.tenant_id !== tenant.id;
-
-  const initials = profile.full_name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase() || "U";
 
   return (
     <aside className="hidden lg:flex flex-col w-64 border-r border-slate-200 bg-white shrink-0 h-screen sticky top-0">
@@ -142,103 +109,6 @@ export function AppSidebar({ tenant, profile, role, shopCode, storeOwnerName }: 
           <span>Plan & Settings</span>
         </Link>
       </nav>
-
-      <div className="p-3 border-t border-slate-200 space-y-2">
-        {isSuperAdminViewing && (
-          <Link href="/founder">
-            <Button
-              variant="outline"
-              size="sm"
-              className="w-full text-xs h-7 text-indigo-700 bg-indigo-50/40 hover:bg-indigo-50 border-indigo-200 cursor-pointer justify-start"
-            >
-              <ShieldCheck className="w-3.5 h-3.5 mr-1.5 text-indigo-600" />
-              Founder Console
-            </Button>
-          </Link>
-        )}
-
-        <AlertDialog>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                className="w-full justify-between px-2 py-1.5 h-auto hover:bg-slate-50 cursor-pointer"
-              >
-                <div className="flex items-center gap-2 min-w-0 text-left">
-                  <Avatar className="h-7 w-7 border border-slate-200">
-                    <AvatarFallback className="bg-slate-100 text-slate-700 text-[10px] font-semibold">
-                      {initials}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="min-w-0">
-                    <p className="text-xs font-semibold text-slate-900 truncate">{profile.full_name}</p>
-                    <p className="text-[10px] text-slate-500 capitalize leading-none pt-0.5">
-                      {profile.is_super_admin ? "Super Admin" : role.name}
-                    </p>
-                  </div>
-                </div>
-                <ChevronUp className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56 bg-white border-slate-200">
-              <DropdownMenuLabel className="font-normal">
-                <div className="flex flex-col space-y-0.5">
-                  <p className="text-xs font-semibold text-slate-900">{profile.full_name}</p>
-                  <p className="text-[11px] text-slate-500">
-                    {profile.is_super_admin ? "Platform Super Admin" : `${tenant.name} (${role.name})`}
-                  </p>
-                </div>
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator className="bg-slate-100" />
-              <DropdownMenuGroup>
-                <DropdownMenuItem asChild className="cursor-pointer text-xs">
-                  <Link href={`/${shopCode}/settings`}>
-                    <Sliders className="mr-2 h-3.5 w-3.5 text-slate-400" />
-                    <span>Plan & Settings</span>
-                  </Link>
-                </DropdownMenuItem>
-                {profile.is_super_admin && (
-                  <DropdownMenuItem asChild className="cursor-pointer text-xs text-indigo-600 font-medium">
-                    <Link href="/founder">
-                      <ShieldCheck className="mr-2 h-3.5 w-3.5 text-indigo-600" />
-                      <span>Platform Founder Console</span>
-                    </Link>
-                  </DropdownMenuItem>
-                )}
-              </DropdownMenuGroup>
-              <DropdownMenuSeparator className="bg-slate-100" />
-              <AlertDialogTrigger asChild>
-                <DropdownMenuItem className="cursor-pointer text-xs text-red-600 focus:text-red-600 focus:bg-red-50">
-                  <LogOut className="mr-2 h-3.5 w-3.5 text-red-500" />
-                  <span>Sign Out</span>
-                </DropdownMenuItem>
-              </AlertDialogTrigger>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          <AlertDialogContent className="bg-white border-slate-200 text-slate-900 max-w-sm">
-            <AlertDialogHeader>
-              <AlertDialogTitle className="text-sm font-semibold text-slate-900">
-                Confirm Sign Out
-              </AlertDialogTitle>
-              <AlertDialogDescription className="text-xs text-slate-500">
-                Are you sure you want to end your current session? You will need to sign in again to access your store.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter className="gap-2 sm:gap-0">
-              <AlertDialogCancel className="text-xs h-8">Cancel</AlertDialogCancel>
-              <form action={logoutAction}>
-                <AlertDialogAction
-                  type="submit"
-                  className="text-xs h-8 bg-red-600 hover:bg-red-700 text-white cursor-pointer"
-                >
-                  Sign Out
-                </AlertDialogAction>
-              </form>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      </div>
     </aside>
   );
 }
