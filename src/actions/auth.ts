@@ -4,6 +4,8 @@ import { createClient } from "@/lib/supabase/server";
 import { LoginSchema, RegisterTenantSchema } from "@/validations/auth";
 import { ActionResponse } from "@/types";
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 
 export interface LoginResult {
   isSuperAdmin: boolean;
@@ -15,6 +17,16 @@ export async function loginAction(formData: unknown): Promise<ActionResponse<Log
     const validated = LoginSchema.safeParse(formData);
     if (!validated.success) {
       return { success: false, error: validated.error.issues[0]?.message || "Validation error." };
+    }
+
+    const headerList = await headers();
+    const clientIp = getClientIp(headerList);
+    const rateLimit = checkRateLimit(`login:${clientIp}:${validated.data.email.toLowerCase()}`, 5, 60);
+    if (!rateLimit.allowed) {
+      return {
+        success: false,
+        error: `Too many login attempts. Please wait ${rateLimit.resetInSeconds} seconds before trying again.`,
+      };
     }
 
     const supabase = await createClient();
@@ -66,6 +78,16 @@ export async function registerTenantAction(
     const validated = RegisterTenantSchema.safeParse(formData);
     if (!validated.success) {
       return { success: false, error: validated.error.issues[0]?.message || "Validation error." };
+    }
+
+    const headerList = await headers();
+    const clientIp = getClientIp(headerList);
+    const rateLimit = checkRateLimit(`register:${clientIp}`, 3, 120);
+    if (!rateLimit.allowed) {
+      return {
+        success: false,
+        error: `Too many registration attempts. Please wait ${rateLimit.resetInSeconds} seconds before trying again.`,
+      };
     }
 
     const supabase = await createClient();

@@ -20,6 +20,8 @@ import {
   SubscriptionPaymentRequest
 } from "@/types";
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 
 async function verifySuperAdmin() {
   const supabase = await createClient();
@@ -270,6 +272,16 @@ export async function founderLoginAction(formData: unknown): Promise<ActionRespo
     const validated = LoginSchema.safeParse(formData);
     if (!validated.success) {
       return { success: false, error: validated.error.issues[0]?.message || "Validation error." };
+    }
+
+    const headerList = await headers();
+    const clientIp = getClientIp(headerList);
+    const rateLimit = checkRateLimit(`founder-login:${clientIp}`, 5, 60);
+    if (!rateLimit.allowed) {
+      return {
+        success: false,
+        error: `Too many login attempts. Please wait ${rateLimit.resetInSeconds} seconds before trying again.`,
+      };
     }
 
     const supabase = await createClient();
