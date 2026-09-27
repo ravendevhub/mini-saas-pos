@@ -1,0 +1,1 @@
+ALTER TABLE profiles ALTER COLUMN tenant_id DROP NOT NULL;
