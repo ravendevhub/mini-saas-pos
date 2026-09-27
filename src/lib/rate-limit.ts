@@ -60,6 +60,10 @@ export function checkRateLimit(
 }
 
 export function getClientIp(headersList: Headers): string {
+  const cfConnectingIp = headersList.get("cf-connecting-ip");
+  if (cfConnectingIp) {
+    return cfConnectingIp.trim();
+  }
   const forwardedFor = headersList.get("x-forwarded-for");
   if (forwardedFor) {
     return forwardedFor.split(",")[0].trim();

@@ -2,11 +2,12 @@ import type { NextConfig } from "next";
 
 const cspHeader = `
   default-src 'self';
-  script-src 'self' 'unsafe-eval' 'unsafe-inline';
-  style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-  font-src 'self' https://fonts.gstatic.com data:;
+  script-src 'self' 'unsafe-eval' 'unsafe-inline' https://cdnjs.cloudflare.com https://challenges.cloudflare.com https://static.cloudflareinsights.com;
+  style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com;
+  font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com data:;
   img-src 'self' data: blob: https:;
-  connect-src 'self' https://okzkwbyehldxztpabxqp.supabase.co wss://okzkwbyehldxztpabxqp.supabase.co https://api.supabase.com;
+  connect-src 'self' https://okzkwbyehldxztpabxqp.supabase.co wss://okzkwbyehldxztpabxqp.supabase.co https://api.supabase.com https://cloudflareinsights.com https://*.cloudflareinsights.com;
+  frame-src https://challenges.cloudflare.com;
   frame-ancestors 'none';
   base-uri 'self';
   form-action 'self';
@@ -17,11 +18,32 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
+        source: "/_next/static/:path*",
+        headers: [
+          {
+            key: "Cloudflare-CDN-Cache-Control",
+            value: "max-age=31536000",
+          },
+          {
+            key: "CDN-Cache-Control",
+            value: "max-age=31536000",
+          },
+        ],
+      },
+      {
         source: "/:path*",
         headers: [
           {
             key: "Content-Security-Policy",
             value: cspHeader,
+          },
+          {
+            key: "Cloudflare-CDN-Cache-Control",
+            value: "no-cache, no-store, must-revalidate",
+          },
+          {
+            key: "CDN-Cache-Control",
+            value: "no-cache, no-store, must-revalidate",
           },
           {
             key: "X-DNS-Prefetch-Control",
