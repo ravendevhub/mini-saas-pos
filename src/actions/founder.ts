@@ -147,6 +147,7 @@ export async function updateSubscriptionPlanAction(formData: unknown): Promise<A
       price_per_month: validated.data.price_per_month,
       max_products: validated.data.max_products,
       max_staff: validated.data.max_staff,
+      max_orders_per_month: validated.data.max_orders_per_month,
       can_view_reports: validated.data.can_view_reports,
     })
     .eq("id", validated.data.planId);

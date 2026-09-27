@@ -4,6 +4,7 @@ export interface SubscriptionPlan {
   price_per_month: number;
   max_products: number;
   max_staff: number;
+  max_orders_per_month: number;
   can_view_reports: boolean;
   created_at: string;
 }

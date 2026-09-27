@@ -3,14 +3,14 @@
 import { useState } from "react";
 import { SubscriptionPlan, FounderTenantSummary } from "@/types";
 import { updateSubscriptionPlanAction } from "@/actions/founder";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { formatCurrency } from "@/lib/formatters";
 import { toast } from "sonner";
-import { Layers, Edit2, CheckCircle2, Package, Users, ShieldCheck, Loader2 } from "lucide-react";
+import { Edit2, CheckCircle2, Package, Users, ShieldCheck, Loader2, Receipt } from "lucide-react";
 
 interface FounderPlansCardProps {
   plans: SubscriptionPlan[];
@@ -23,6 +23,7 @@ export function FounderPlansCard({ plans, tenants }: FounderPlansCardProps) {
   const [price, setPrice] = useState("");
   const [maxProducts, setMaxProducts] = useState("");
   const [maxStaff, setMaxStaff] = useState("");
+  const [maxOrders, setMaxOrders] = useState("");
   const [canViewReports, setCanViewReports] = useState(true);
   const [isPending, setIsPending] = useState(false);
 
@@ -32,6 +33,7 @@ export function FounderPlansCard({ plans, tenants }: FounderPlansCardProps) {
     setPrice(plan.price_per_month.toString());
     setMaxProducts(plan.max_products.toString());
     setMaxStaff(plan.max_staff.toString());
+    setMaxOrders((plan.max_orders_per_month || 500).toString());
     setCanViewReports(plan.can_view_reports);
   }
 
@@ -47,6 +49,7 @@ export function FounderPlansCard({ plans, tenants }: FounderPlansCardProps) {
         price_per_month: parseFloat(price) || 0,
         max_products: parseInt(maxProducts, 10) || 1,
         max_staff: parseInt(maxStaff, 10) || 1,
+        max_orders_per_month: parseInt(maxOrders, 10) || 100,
         can_view_reports: canViewReports,
       });
 
@@ -72,7 +75,7 @@ export function FounderPlansCard({ plans, tenants }: FounderPlansCardProps) {
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-sm font-semibold text-slate-900">Subscription Plan Management</h3>
-          <p className="text-xs text-slate-500">Configure feature ceilings, inventory quotas, and pricing tiers for all stores.</p>
+          <p className="text-xs text-slate-500">Configure feature ceilings, inventory quotas, user seats, and voucher limits for all stores.</p>
         </div>
         <Badge variant="outline" className="border-indigo-200 bg-indigo-50 text-indigo-700 text-xs font-mono">
           {plans.length} Active Tiers
@@ -126,7 +129,7 @@ export function FounderPlansCard({ plans, tenants }: FounderPlansCardProps) {
                   <div className="flex items-center justify-between text-slate-600">
                     <span className="flex items-center gap-1.5">
                       <Package className="w-3.5 h-3.5 text-slate-400" />
-                      Catalog Capacity
+                      Catalog Items
                     </span>
                     <span className="font-mono font-semibold text-slate-900 tabular-nums">
                       {plan.max_products.toLocaleString()} items
@@ -139,7 +142,17 @@ export function FounderPlansCard({ plans, tenants }: FounderPlansCardProps) {
                       Staff Accounts
                     </span>
                     <span className="font-mono font-semibold text-slate-900 tabular-nums">
-                      {plan.max_staff} {plan.max_staff === 1 ? "seat" : "seats"}
+                      {plan.max_staff} {plan.max_staff === 1 ? "account" : "accounts"}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between text-slate-600">
+                    <span className="flex items-center gap-1.5">
+                      <Receipt className="w-3.5 h-3.5 text-slate-400" />
+                      Monthly Vouchers (vr)
+                    </span>
+                    <span className="font-mono font-semibold text-indigo-600 tabular-nums">
+                      {(plan.max_orders_per_month || 500).toLocaleString()} / mo
                     </span>
                   </div>
 
@@ -176,7 +189,7 @@ export function FounderPlansCard({ plans, tenants }: FounderPlansCardProps) {
               Edit Subscription Tier ({selectedPlan?.id.toUpperCase()})
             </DialogTitle>
             <DialogDescription className="text-xs text-slate-500">
-              Modify the pricing, inventory limits, and user capacity for this tier.
+              Modify the pricing, inventory limits, user capacity, and voucher allowance.
             </DialogDescription>
           </DialogHeader>
 
@@ -210,7 +223,7 @@ export function FounderPlansCard({ plans, tenants }: FounderPlansCardProps) {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-3 gap-2">
               <div className="space-y-1">
                 <label className="text-xs font-medium text-slate-700" htmlFor="plan-products">
                   Max Products *
@@ -228,7 +241,7 @@ export function FounderPlansCard({ plans, tenants }: FounderPlansCardProps) {
 
               <div className="space-y-1">
                 <label className="text-xs font-medium text-slate-700" htmlFor="plan-staff">
-                  Max Staff Members *
+                  Max Staff *
                 </label>
                 <Input
                   id="plan-staff"
@@ -237,6 +250,21 @@ export function FounderPlansCard({ plans, tenants }: FounderPlansCardProps) {
                   required
                   value={maxStaff}
                   onChange={(e) => setMaxStaff(e.target.value)}
+                  className="h-9 text-xs font-mono"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-slate-700" htmlFor="plan-orders">
+                  Max Vouchers (vr) *
+                </label>
+                <Input
+                  id="plan-orders"
+                  type="number"
+                  min="1"
+                  required
+                  value={maxOrders}
+                  onChange={(e) => setMaxOrders(e.target.value)}
                   className="h-9 text-xs font-mono"
                 />
               </div>

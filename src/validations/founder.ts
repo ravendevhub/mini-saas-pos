@@ -21,5 +21,6 @@ export const UpdateSubscriptionPlanSchema = z.object({
   price_per_month: z.number().min(0, "Price must be 0 or higher"),
   max_products: z.number().int().positive("Product limit must be greater than 0"),
   max_staff: z.number().int().positive("Staff limit must be greater than 0"),
+  max_orders_per_month: z.number().int().positive("Monthly voucher limit must be greater than 0"),
   can_view_reports: z.boolean().default(true),
 });
