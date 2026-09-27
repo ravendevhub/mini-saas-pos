@@ -6,14 +6,15 @@ A modern, high-performance, multi-tenant cloud Point of Sale (POS) and inventory
 
 ## 🎨 Typography & Fonts
 
-This project uses modern, high-precision typography loaded via `next/font/google`:
+This project implements the official **Google Fonts & shadcn/ui typography standards** loaded via `next/font/google`:
 
-- **Primary UI Font — Geist Sans (`--font-geist-sans`)**:
-  - Engineered by Vercel for high legibility, clean geometric proportions, and modern software interfaces.
+- **Primary UI Font — Inter (`--font-sans`)**:
+  - The gold standard for modern web and SaaS application interfaces (designed by Rasmus Andersson).
+  - Adopted globally by Stripe, GitHub, Figma, Linear, and shadcn/ui for crystal-clear readability, neutral grotesque clarity, and tall x-height.
   - Applied across all headers, navigation elements, inputs, buttons, and descriptive body text.
-- **Monospace & Financial Font — Geist Mono (`--font-geist-mono`)**:
-  - High-density monospace typeface paired with `tabular-nums`.
-  - Applied to all currency amounts, item prices, SKU barcodes, receipt IDs, transaction totals, quantities, and timestamps so numbers align vertically in data tables, receipts, and analytics charts.
+- **Monospace & Financial Font — Roboto Mono (`--font-mono`)**:
+  - High-precision Google monospace typeface paired with `tabular-nums`.
+  - Applied to all currency amounts, item prices, SKU barcodes, receipt IDs, transaction totals, quantities, and timestamps so numerical figures align vertically in data tables, receipts, and analytics charts.
 
 ---
 
