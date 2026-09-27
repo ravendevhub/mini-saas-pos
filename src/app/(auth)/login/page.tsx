@@ -85,7 +85,7 @@ export default function LoginPage() {
           </div>
 
           <div className="lg:col-span-6 flex justify-center lg:justify-end">
-            <div className="w-full max-w-[420px] rounded-3xl bg-white/65 backdrop-blur-3xl border border-white/80 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.35)] p-7 sm:p-9 text-slate-900 ring-1 ring-white/60 transition-all">
+            <div className="w-full max-w-[420px] rounded-3xl bg-white/85 backdrop-blur-2xl border border-white shadow-2xl p-7 sm:p-9 text-slate-900 transition-all">
               <div className="flex items-center gap-3 mb-6">
                 <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-indigo-50 border border-indigo-100 text-indigo-600 shadow-sm">
                   <ShoppingBag className="h-5 w-5 text-indigo-600" />
@@ -137,7 +137,7 @@ export default function LoginPage() {
                       className="absolute right-3.5 flex items-center text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
                       aria-label={showPassword ? "Hide password" : "Show password"}
                     >
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      {showPassword ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
                     </button>
                   </div>
                 </div>
